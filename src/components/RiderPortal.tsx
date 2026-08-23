@@ -364,7 +364,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
               <button
                 type="submit"
                 id="rider-login-submit-btn"
-                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-amber-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                className="w-full py-3.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-amber-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 <KeyRound className="w-4 h-4" />
                 <span>Start Shift & Open Live Dispatcher</span>
@@ -450,7 +450,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
               <button
                 type="submit"
                 id="rider-register-submit-btn"
-                className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-amber-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                className="w-full py-3.5 bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-amber-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>Onboard Partner & Go Online</span>

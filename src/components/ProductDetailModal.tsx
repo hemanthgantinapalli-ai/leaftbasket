@@ -300,7 +300,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       >
                         <Minus className="w-4 h-4" />
                       </button>
-                      <span className="px-3 sm:px-4 font-extrabold text-sm sm:text-base min-w-[36px] text-center">
+                      <span className="px-3 sm:px-4 font-extrabold text-sm sm:text-base min-w-9 text-center">
                         {cartQuantity} in Basket
                       </span>
                       <button
@@ -318,7 +318,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             /* Ratings & Reviews Tab View */
             <div className="p-5 sm:p-6 max-h-[75vh] overflow-y-auto space-y-6">
               {/* Reviews Summary Card */}
-              <div className="p-5 bg-gradient-to-br from-stone-50 to-emerald-50/40 rounded-2xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="p-5 bg-linear-to-br from-stone-50 to-emerald-50/40 rounded-2xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-5">
                 <div className="flex items-center gap-4 text-center sm:text-left">
                   <div className="w-20 h-20 rounded-2xl bg-white border border-emerald-200 shadow-sm flex flex-col items-center justify-center shrink-0">
                     <span className="text-3xl font-black text-stone-900 font-['Outfit'] leading-none">
@@ -456,7 +456,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       {/* Review Header */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-700 to-teal-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+                          <div className="w-8 h-8 rounded-full bg-linear-to-tr from-emerald-700 to-teal-600 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
                             {rev.userName ? rev.userName.charAt(0).toUpperCase() : "U"}
                           </div>
                           <div>
