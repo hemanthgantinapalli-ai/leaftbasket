@@ -67,9 +67,18 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
         riderId: "rider-partner-04",
         name: "Delivery Partner #04",
         phone: "+91 98••• ••471",
+        vehicleType: "EV Scooter",
         vehicleNumber: "KA 01 EV 7892",
         rating: 4.96,
         completedDeliveries: 1482,
+        currentStatus: "idle",
+        currentLocation: {
+          lat: 12.9785,
+          lng: 77.6415,
+          heading: 42,
+          speedKmH: 0,
+          lastUpdated: new Date().toISOString(),
+        },
         batteryPercentage: 92,
       }
     );
@@ -110,9 +119,18 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
           riderId: found.id,
           name: found.name,
           phone: found.phone,
+          vehicleType: found.vehicleType || "Electric Scooter",
           vehicleNumber: found.vehicle,
           rating: 5.0,
           completedDeliveries: 1,
+          currentStatus: "assigned",
+          currentLocation: {
+            lat: 12.9738,
+            lng: 77.6382,
+            heading: 190,
+            speedKmH: 20,
+            lastUpdated: new Date().toISOString(),
+          },
           batteryPercentage: 94,
         });
       }
@@ -169,9 +187,18 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
       riderId: newRiderRecord.id,
       name: newRiderRecord.name,
       phone: newRiderRecord.phone,
+      vehicleType: newRiderRecord.vehicle?.includes("Bike") ? "Bike" : "Electric Scooter",
       vehicleNumber: newRiderRecord.vehicle,
       rating: 5.0,
       completedDeliveries: 0,
+      currentStatus: "idle",
+      currentLocation: {
+        lat: 12.9729,
+        lng: 77.6374,
+        heading: 0,
+        speedKmH: 0,
+        lastUpdated: new Date().toISOString(),
+      },
       batteryPercentage: 96,
     });
 

@@ -1,4 +1,3 @@
-import React from "react";
 import { X, ShieldCheck, Clock, Leaf, Bike, Award, Heart, CheckCircle2, Truck, Users } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { LeafBasketLogo } from "./LeafBasketLogo";
@@ -31,7 +30,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
           className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-2xl overflow-hidden z-10"
         >
           {/* Header */}
-          <div className="p-6 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white relative overflow-hidden">
+          <div className="p-6 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white relative overflow-hidden">
             <div className="flex items-center justify-between relative z-10">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center p-1 shadow-lg">

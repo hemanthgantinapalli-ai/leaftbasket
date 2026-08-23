@@ -29,6 +29,7 @@ export interface Product {
   gallery?: string[];
   badge?: string;
   rating: number;
+  ratingCount?: number;
   reviewsCount: number;
   reviews?: ProductReview[];
   description: string;
@@ -37,10 +38,22 @@ export interface Product {
     protein?: string;
     carbs?: string;
     fat?: string;
+    fiber?: string;
+  };
+  nutrition?: {
+    calories?: number | string;
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+    fiber?: string;
   };
   origin?: string;
   isOrganic?: boolean;
+  harvestDate?: string;
+  farmLocation?: string;
   shelfLife?: string;
+  shelfLifeDays?: number;
+  organicCertified?: boolean;
   deliveryTimeMinutes: number;
   tags: string[];
 }
@@ -116,6 +129,11 @@ export interface Order {
   orderStatus: "placed" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
   statusTimeline: OrderTimelineItem[];
   riderDetails?: RiderDetails;
+  riderLocation?: {
+    lat: number;
+    lng: number;
+    name?: string;
+  };
   etaMinutes: number;
   otp: string;
   notes?: string;

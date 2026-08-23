@@ -24,6 +24,7 @@ interface ProductDetailModalProps {
   onAddToCart: (product: Product) => void;
   onUpdateQuantity: (productId: string, qty: number) => void;
   onOpenReviewModal?: (product: Product) => void;
+  onOpenWriteReview?: (product: Product) => void;
   onVoteHelpful?: (productId: string, reviewId: string) => void;
   initialTab?: "overview" | "reviews";
 }

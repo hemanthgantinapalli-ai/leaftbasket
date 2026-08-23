@@ -436,12 +436,14 @@ export default function App() {
           category: "vegetables",
           price: item.price,
           originalPrice: Math.round(item.price * 1.25),
+          discountPercentage: 18,
           unit: item.unit || "1 unit",
           image: item.image,
           inStock: true,
           stockCount: 50,
           rating: 4.8,
           ratingCount: 142,
+          reviewsCount: 142,
           tags: ["Fresh", "Reordered"],
           description: `${item.name} - Handpicked 10-minute dispatch quality`,
           harvestDate: "Today 4:00 AM",
@@ -474,12 +476,14 @@ export default function App() {
       category: "vegetables",
       price: item.price,
       originalPrice: Math.round(item.price * 1.25),
+      discountPercentage: 18,
       unit: item.unit || "1 unit",
       image: item.image,
       inStock: true,
       stockCount: 50,
       rating: 4.8,
       ratingCount: 142,
+      reviewsCount: 142,
       tags: ["Fresh", "Reordered"],
       description: `${item.name} - Handpicked 10-minute dispatch quality`,
       harvestDate: "Today 4:00 AM",
@@ -559,8 +563,9 @@ export default function App() {
       verifiedPurchase?: boolean;
     }
   ) => {
-    const updatedProduct = await submitProductReview(productId, reviewData);
-    if (updatedProduct) {
+    const reviewResult = await submitProductReview(productId, reviewData);
+    if (reviewResult) {
+      const updatedProduct = reviewResult.product;
       setProducts((prev) =>
         prev.map((p) => (p.id === productId ? updatedProduct : p))
       );
@@ -859,7 +864,7 @@ export default function App() {
       <ReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
-        product={reviewTargetProduct}
+        targetProduct={reviewTargetProduct}
         currentUser={currentUser}
         onSubmitReview={handleSubmitReview}
       />
