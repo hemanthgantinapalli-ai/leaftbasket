@@ -669,7 +669,7 @@ export default function App() {
 
 
       {/* Main Screen View Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-3 sm:px-4 py-5 sm:py-6">
         {currentTab === "shop" && (
           <div>
             {/* Hero Banner & Flash Coupons */}

@@ -103,7 +103,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </button>
 
           {/* Navigation Tab Bar */}
-          <div className="bg-stone-100/90 px-5 pt-3 border-b border-stone-200 flex gap-2">
+          <div className="bg-stone-100/90 px-3 sm:px-5 pt-3 border-b border-stone-200 flex gap-2 overflow-x-auto">
             <button
               onClick={() => setActiveTab("overview")}
               className={`pb-2.5 px-3 text-xs sm:text-sm font-extrabold border-b-2 transition cursor-pointer ${
@@ -269,7 +269,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between gap-4">
+                <div className="mt-6 pt-4 border-t border-stone-200 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <div className="text-xs text-stone-500">Price</div>
                     <div className="flex items-baseline gap-2">
