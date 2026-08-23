@@ -1041,7 +1041,9 @@ export default function App() {
             <span className="inline-flex items-center gap-1 text-stone-500 font-medium">
               Designed by{" "}
               <a
-                href="mailto:hemanthgantinapalli@gmail.com?subject=Inquiry%20from%20Leaf%20Basket%20App&body=Hi%20Hemanth,%0A%0AI%20am%20reaching%20out%20regarding%20Leaf%20Basket..."
+                href="https://mail.google.com/mail/?view=cm&fs=1&to=hemanthgantinapalli%40gmail.com&su=Inquiry%20from%20Leaf%20Basket%20App&body=Hi%20Hemanth%2C%0A%0AI%20am%20reaching%20out%20regarding%20Leaf%20Basket..."
+                target="_blank"
+                rel="noreferrer"
                 id="footer-designer-email-link"
                 className="text-emerald-700 hover:text-emerald-900 font-bold hover:underline inline-flex items-center gap-1 transition"
                 title="Send email to hemanthgantinapalli@gmail.com"
