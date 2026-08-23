@@ -164,7 +164,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
           className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden z-10 my-4"
         >
           {/* Header Banner */}
-          <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between">
+          <div className="p-4 sm:p-5 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-300/30 flex items-center justify-center text-amber-300 text-lg shadow-inner">
                 ⭐
