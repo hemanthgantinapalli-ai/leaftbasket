@@ -1,0 +1,6 @@
+{
+  "name": "Leafbasket",
+  "description": "Premium 10-minute grocery delivery platform with customer storefront, live order tracking, rider dispatch portal, and admin dashboard.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
