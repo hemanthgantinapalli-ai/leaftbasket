@@ -311,43 +311,46 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-xs">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/65 backdrop-blur-xs"
+          className="absolute inset-0 bg-transparent"
         />
 
         {/* Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-2xl overflow-hidden z-10 my-4 flex flex-col max-h-[90vh]"
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 35 }}
+          className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 w-full max-w-2xl overflow-hidden z-10 my-0 sm:my-4 flex flex-col max-h-[92vh] sm:max-h-[90vh]"
         >
+          {/* Mobile Drag Indicator */}
+          <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
           {/* Header Banner */}
-          <div className="p-4 sm:p-6 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-xl font-black text-amber-300 shadow-inner">
+          <div className="p-3.5 sm:p-6 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-lg sm:text-xl font-black text-amber-300 shadow-inner shrink-0">
                 {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "👤"}
               </div>
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-base sm:text-lg font-extrabold font-['Outfit'] text-white">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <h3 className="text-sm sm:text-lg font-extrabold font-['Outfit'] text-white truncate max-w-[140px] sm:max-w-none">
                     {currentUser?.name || "Leafbasket Member"}
                   </h3>
-                  <span className="text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-300" />
-                    <span>Club Member</span>
+                  <span className="text-[9px] sm:text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-300" />
+                    <span>Club</span>
                   </span>
                 </div>
-                <div className="text-xs text-emerald-200 flex items-center gap-2 mt-0.5">
+                <div className="text-[11px] sm:text-xs text-emerald-200 flex items-center gap-1.5 sm:gap-2 mt-0.5">
                   <span>{currentUser?.phone || "+91 98765 43210"}</span>
                   <span>•</span>
-                  <span>{displayOrders.length} Past Deliveries</span>
+                  <span>{displayOrders.length} Orders</span>
                 </div>
               </div>
             </div>

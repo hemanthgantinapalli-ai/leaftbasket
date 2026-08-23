@@ -219,7 +219,7 @@ export const PhonePeQrModal: React.FC<PhonePeQrModalProps> = ({
           initial={{ opacity: 0, scale: 0.94, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 15 }}
-          className={`relative w-full max-w-sm bg-gradient-to-b ${currentConfig.themeGradient} text-white rounded-3xl shadow-2xl border ${currentConfig.accentBorder} overflow-hidden my-auto transition-colors duration-300`}
+          className={`relative w-full max-w-sm bg-gradient-to-b ${currentConfig.themeGradient} text-white rounded-3xl shadow-2xl border ${currentConfig.accentBorder} overflow-y-auto max-h-[94vh] my-auto transition-colors duration-300 pb-safe`}
         >
           {/* Top Status Bar */}
           <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">

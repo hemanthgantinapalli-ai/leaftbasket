@@ -330,49 +330,52 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-3 sm:p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-xs">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/65 backdrop-blur-xs"
+          className="absolute inset-0 bg-transparent"
         />
 
         {/* Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-xl overflow-hidden z-10 my-6"
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 40 }}
+          className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 w-full max-w-xl overflow-hidden z-10 max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-6"
         >
+          {/* Mobile Drag Indicator */}
+          <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
           {/* Header */}
-          <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-emerald-200 shadow-inner">
-                <MapPin className="w-5 h-5" />
+          <div className="p-3.5 sm:p-5 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-emerald-200 shadow-inner shrink-0">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-extrabold font-['Outfit'] flex items-center gap-2">
+                <h3 className="text-sm sm:text-lg font-extrabold font-['Outfit'] flex items-center gap-2">
                   <span>Delivery Location</span>
-                  <span className="text-[10px] bg-amber-400 text-emerald-950 font-black px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
+                  <span className="text-[9px] sm:text-[10px] bg-amber-400 text-emerald-950 font-black px-1.5 py-0.5 rounded-sm uppercase tracking-wide">
                     ⚡ 10 MINS
                   </span>
                 </h3>
-                <p className="text-xs text-emerald-200">Instant dispatch from our regional organic dark stores</p>
+                <p className="text-[11px] sm:text-xs text-emerald-200">Instant dispatch from our regional organic dark stores</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="p-4 sm:p-5 space-y-4 max-h-[80vh] overflow-y-auto">
+          <div className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 flex-1 overflow-y-auto pb-safe">
             {/* Primary Action: Live GPS & Network Detection */}
             <div className="bg-gradient-to-br from-emerald-50 via-teal-50/50 to-stone-50 p-3.5 rounded-2xl border border-emerald-300/80 shadow-xs space-y-2">
               <div className="flex items-center justify-between">

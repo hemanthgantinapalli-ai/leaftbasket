@@ -199,13 +199,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           className="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         />
 
-        <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+        <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between"
+            className="w-full sm:w-screen sm:max-w-md bg-white shadow-2xl flex flex-col justify-between"
           >
             {/* Drawer Header */}
             <div className="p-4 bg-emerald-950 text-white flex items-center justify-between border-b border-emerald-900">
@@ -901,22 +901,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
             {/* Sticky Drawer Footer Checkout Button */}
             {cartItems.length > 0 && (
-              <div className="p-4 bg-white border-t border-stone-200 shadow-lg">
+              <div className="p-3 sm:p-4 pb-safe bg-white border-t border-stone-200 shadow-lg">
                 <button
                   onClick={handleCheckout}
                   disabled={isSubmitting}
                   id="place-order-checkout-button"
-                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-700/25 flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs sm:text-sm py-3 sm:py-3.5 px-3.5 sm:px-4 rounded-2xl shadow-lg shadow-emerald-700/25 flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <div className="text-[10px] text-emerald-100 font-medium uppercase tracking-wider">
+                    <div className="text-[9px] sm:text-[10px] text-emerald-100 font-medium uppercase tracking-wider">
                       10-MIN HYPERFAST DISPATCH
                     </div>
-                    <div className="text-base font-black">₹{grandTotal} · Pay with {paymentMethod.toUpperCase()}</div>
+                    <div className="text-sm sm:text-base font-black">₹{grandTotal} · Pay with {paymentMethod.toUpperCase()}</div>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-emerald-950/30 px-3 py-1.5 rounded-xl text-xs font-bold">
+                  <div className="flex items-center gap-1.5 bg-emerald-950/30 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-bold shrink-0">
                     <span>{isSubmitting ? "Placing..." : "Place Order"}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
                 </button>
               </div>

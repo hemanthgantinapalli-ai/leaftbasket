@@ -12,46 +12,49 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+          className="absolute inset-0 bg-transparent"
         />
 
         {/* Modal Window */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-2xl overflow-hidden z-10"
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 35 }}
+          className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 w-full max-w-2xl overflow-hidden z-10 max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-4"
         >
+          {/* Mobile Drag Indicator */}
+          <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
           {/* Header */}
-          <div className="p-6 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white relative overflow-hidden">
+          <div className="p-4 sm:p-6 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white relative overflow-hidden shrink-0">
             <div className="flex items-center justify-between relative z-10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center p-1 shadow-lg">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 backdrop-blur-xs flex items-center justify-center p-1 shadow-lg shrink-0">
                   <LeafBasketLogo variant="icon" size="sm" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-extrabold font-['Outfit']">About Leaf Basket</h3>
-                  <p className="text-xs text-emerald-200">Fresh. Local. Delivered. (10-Minute Farm Delivery)</p>
+                  <h3 className="text-base sm:text-xl font-extrabold font-['Outfit']">About Leaf Basket</h3>
+                  <p className="text-[11px] sm:text-xs text-emerald-200">Fresh. Local. Delivered. (10-Minute Farm Delivery)</p>
                 </div>
               </div>
 
               <button
                 onClick={onClose}
-                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
 
-          <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1 overflow-y-auto pb-safe">
             {/* Mission Statement */}
             <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80">
               <h4 className="text-sm font-extrabold text-emerald-950 mb-1 flex items-center gap-2">

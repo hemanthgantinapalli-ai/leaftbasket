@@ -174,16 +174,16 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Live Map & Visual Scooter Route */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-gradient-to-br from-emerald-950 via-teal-950 to-stone-900 rounded-3xl text-white p-6 sm:p-8 relative overflow-hidden shadow-xl border border-emerald-900">
+          <div className="bg-gradient-to-br from-emerald-950 via-teal-950 to-stone-900 rounded-3xl text-white p-4 sm:p-8 relative overflow-hidden shadow-xl border border-emerald-900">
             {/* Header ETA Banner */}
-            <div className="flex flex-wrap items-start justify-between gap-4 relative z-10">
+            <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4 relative z-10">
               <div>
-                <div className="inline-flex items-center gap-1.5 bg-amber-400 text-emerald-950 font-extrabold text-xs px-2.5 py-1 rounded-full uppercase tracking-wider mb-2">
-                  <Clock className="w-3.5 h-3.5" />
+                <div className="inline-flex items-center gap-1.5 bg-amber-400 text-emerald-950 font-extrabold text-[10px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full uppercase tracking-wider mb-2">
+                  <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   <span>10-Minute Hyperfast</span>
                 </div>
 
-                <h1 className="text-2xl sm:text-4xl font-black font-['Outfit'] tracking-tight">
+                <h1 className="text-xl sm:text-3xl lg:text-4xl font-black font-['Outfit'] tracking-tight leading-tight">
                   {isDelivered ? (
                     <span className="text-emerald-400">Delivered Fresh! Enjoy your meal 🥗</span>
                   ) : (
@@ -261,12 +261,12 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
 
 
           {/* Stepper Timeline Progression */}
-          <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-xs space-y-4">
-            <h3 className="text-base font-extrabold text-stone-900 font-['Outfit']">
+          <div className="bg-white p-4 sm:p-6 rounded-3xl border border-stone-200 shadow-xs space-y-3 sm:space-y-4">
+            <h3 className="text-sm sm:text-base font-extrabold text-stone-900 font-['Outfit']">
               Order Milestone Updates
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {steps.map((st) => {
                 const state = getStepState(st.key);
                 const IconComponent = st.icon;

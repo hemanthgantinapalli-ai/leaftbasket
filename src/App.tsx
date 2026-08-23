@@ -47,6 +47,8 @@ import { UserProfileModal, UserProfile } from "./components/UserProfileModal";
 import { PhonePeQrModal, UPIAppType } from "./components/PhonePeQrModal";
 import { NotificationToasts } from "./components/NotificationToasts";
 import { OrderStatusOverlayBadge } from "./components/OrderStatusOverlayBadge";
+import { MobileBottomNav } from "./components/MobileBottomNav";
+import { MobileCartBar } from "./components/MobileCartBar";
 import { LeafBasketLogo } from "./components/LeafBasketLogo";
 import { detectUserLocation } from "./utils/geolocation";
 import { playNotificationChime } from "./utils/audioChime";
@@ -669,7 +671,7 @@ export default function App() {
 
 
       {/* Main Screen View Content */}
-      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-3 sm:px-4 py-5 sm:py-6">
+      <main className="flex-1 min-w-0 max-w-7xl w-full mx-auto px-3 sm:px-4 py-3.5 sm:py-6 pb-32 lg:pb-8">
         {currentTab === "shop" && (
           <div>
             {/* Hero Banner & Flash Coupons */}
@@ -961,7 +963,7 @@ export default function App() {
       />
 
       {/* Premium Privacy-First Customer Footer */}
-      <footer className="mt-12 bg-white border-t border-stone-200 pt-10 pb-6 text-stone-600 text-xs">
+      <footer className="mt-12 bg-white border-t border-stone-200 pt-10 pb-28 lg:pb-8 text-stone-600 text-xs">
         <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <div className="mb-3">
@@ -1110,6 +1112,41 @@ export default function App() {
         notifications={activeToasts}
         onDismiss={handleDismissToast}
         onSelectNotification={handleSelectNotification}
+      />
+
+      {/* Floating Sticky Bottom Cart Bar for Mobile Viewport */}
+      <MobileCartBar
+        cartItems={cartItems}
+        onOpenCart={() => setIsCartOpen(true)}
+        isOpen={isCartOpen}
+      />
+
+      {/* Persistent Native-Feel Bottom Navigation Bar for Mobile */}
+      <MobileBottomNav
+        currentTab={currentTab}
+        onTabChange={setCurrentTab}
+        onOpenAIChef={() => setIsAIChefOpen(true)}
+        onOpenProfile={(tab) => {
+          setProfileInitialTab(tab || "orders");
+          setIsProfileModalOpen(true);
+        }}
+        onOpenAuth={(mode) => {
+          setAuthMode(mode || "login");
+          setIsAuthModalOpen(true);
+        }}
+        currentUser={currentUser}
+        activeOrderCount={orders.filter((o) => o.orderStatus !== "delivered").length}
+        onScrollToCategories={() => {
+          if (currentTab !== "shop") {
+            setCurrentTab("shop");
+          }
+          setTimeout(() => {
+            const el = document.getElementById("categories-section-anchor");
+            if (el) {
+              el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }, 50);
+        }}
       />
 
     </div>

@@ -146,34 +146,37 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/65 backdrop-blur-xs">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/65 backdrop-blur-xs"
+          className="absolute inset-0 bg-transparent"
         />
 
         {/* Modal Content */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden z-10 my-4"
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 35 }}
+          className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden z-10 max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-4"
         >
+          {/* Mobile Drag Indicator */}
+          <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
+
           {/* Header Banner */}
-          <div className="p-4 sm:p-5 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between">
+          <div className="p-3.5 sm:p-5 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-300/30 flex items-center justify-center text-amber-300 text-lg shadow-inner">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-400/20 border border-amber-300/30 flex items-center justify-center text-amber-300 text-lg shadow-inner shrink-0">
                 ⭐
               </div>
               <div>
-                <h3 className="text-base font-extrabold font-['Outfit'] text-white">
+                <h3 className="text-sm sm:text-base font-extrabold font-['Outfit'] text-white">
                   Rate & Review Product
                 </h3>
-                <p className="text-xs text-emerald-200">
+                <p className="text-[11px] sm:text-xs text-emerald-200">
                   Help local Bangalore shoppers choose the freshest harvest
                 </p>
               </div>
@@ -181,7 +184,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
 
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
             </button>

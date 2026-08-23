@@ -89,7 +89,7 @@ export const OrderStatusOverlayBadge: React.FC<OrderStatusOverlayBadgeProps> = (
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 30, scale: 0.9 }}
         id="live-order-overlay-badge"
-        className="fixed bottom-5 left-4 sm:left-6 z-40 max-w-sm w-[calc(100vw-32px)] sm:w-auto"
+        className="fixed bottom-[68px] sm:bottom-6 left-3 sm:left-6 z-30 max-w-sm w-[calc(100vw-24px)] sm:w-auto"
       >
         <div className="relative bg-white/95 backdrop-blur-md border-2 border-stone-800 shadow-2xl rounded-2xl p-3 sm:p-3.5 pr-8 flex items-center gap-3 transition hover:shadow-emerald-950/20">
           
