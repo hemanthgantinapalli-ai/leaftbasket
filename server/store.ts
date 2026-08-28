@@ -487,12 +487,28 @@ export async function getOrders(phone?: string) {
       const query: any = phone ? { customerPhone: phone } : {};
       const [orders, riders] = await Promise.all([
         OrderModel.find(query).sort({ createdAt: -1 }).lean().exec(),
-        RiderModel.find().select({ riderId: 1 }).lean().exec(),
+        RiderModel.find().lean().exec(),
       ]);
-      const riderIds = new Set(riders.map((rider) => rider.riderId));
-      return orders.map((order: any) => riderIds.has(order.riderDetails?.riderId)
-        ? order
-        : { ...order, riderDetails: undefined });
+      const ridersById = new Map(riders.map((rider: any) => [rider.riderId, rider]));
+      const ridersByOrder = new Map(riders.filter((rider: any) => rider.activeOrderId).map((rider: any) => [rider.activeOrderId, rider]));
+      return orders.map((order: any) => {
+        const rider = ridersById.get(order.riderDetails?.riderId) || ridersByOrder.get(order.orderId);
+        if (!rider) return { ...order, riderDetails: undefined };
+        if (order.riderDetails?.riderId === rider.riderId) return order;
+        return {
+          ...order,
+          riderDetails: {
+            riderId: rider.riderId,
+            name: rider.name,
+            phone: rider.phone,
+            vehicleNumber: rider.vehicleNumber,
+            rating: rider.rating,
+            photo: rider.photo,
+            lat: rider.currentLocation?.lat || 12.9724,
+            lng: rider.currentLocation?.lng || 77.6385,
+          },
+        };
+      });
     } catch (e) {
       console.warn("MongoDB getOrders error:", e);
     }
