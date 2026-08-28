@@ -391,14 +391,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
           {/* Header Banner */}
-          <div className="p-3.5 sm:p-6 bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between shrink-0">
+          <div className="p-3.5 sm:p-6 bg-linear-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 sm:gap-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-lg sm:text-xl font-black text-amber-300 shadow-inner shrink-0">
                 {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "👤"}
               </div>
               <div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
-                  <h3 className="text-sm sm:text-lg font-extrabold font-['Outfit'] text-white truncate max-w-[140px] sm:max-w-none">
+                  <h3 className="text-sm sm:text-lg font-extrabold font-['Outfit'] text-white truncate max-w-35 sm:max-w-none">
                     {currentUser?.name || "Leafbasket Member"}
                   </h3>
                   <span className="text-[9px] sm:text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-400/30 flex items-center gap-1">

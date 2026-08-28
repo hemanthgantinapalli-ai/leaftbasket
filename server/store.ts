@@ -330,7 +330,9 @@ export async function addProductReview(
         const newRating = Number(((currentRating * currentCount + newReview.rating) / (currentCount + 1)).toFixed(1));
         const newCount = currentCount + 1;
 
-        prod.reviews.unshift(newReview as any);
+        const reviews = (prod.reviews || []) as any[];
+        reviews.unshift(newReview as any);
+        (prod as any).reviews = reviews;
         prod.rating = newRating;
         prod.reviewsCount = newCount;
         await prod.save();

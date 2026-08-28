@@ -219,7 +219,7 @@ export const PhonePeQrModal: React.FC<PhonePeQrModalProps> = ({
           initial={{ opacity: 0, scale: 0.94, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 15 }}
-          className={`relative w-full max-w-sm bg-gradient-to-b ${currentConfig.themeGradient} text-white rounded-3xl shadow-2xl border ${currentConfig.accentBorder} overflow-y-auto max-h-[94vh] my-auto transition-colors duration-300 pb-safe`}
+          className={`relative w-full max-w-sm bg-linear-to-b ${currentConfig.themeGradient} text-white rounded-3xl shadow-2xl border ${currentConfig.accentBorder} overflow-y-auto max-h-[94vh] my-auto transition-colors duration-300 pb-safe`}
         >
           {/* Top Status Bar */}
           <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
@@ -273,7 +273,7 @@ export const PhonePeQrModal: React.FC<PhonePeQrModalProps> = ({
           <div className="p-4 sm:p-5 pt-3 pb-4">
             <div className="flex items-center justify-between mb-3 bg-black/30 p-2.5 rounded-2xl border border-white/10">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 shadow-md flex items-center justify-center text-white font-extrabold text-xs overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-linear-to-tr from-emerald-600 to-teal-500 p-0.5 shadow-md flex items-center justify-center text-white font-extrabold text-xs overflow-hidden">
                   <span className="text-base">🍃</span>
                 </div>
                 <div>
@@ -455,7 +455,7 @@ export const PhonePeQrModal: React.FC<PhonePeQrModalProps> = ({
                   type="button"
                   onClick={handleConfirmPayment}
                   disabled={isVerifying}
-                  className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-3.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs rounded-2xl shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isVerifying ? (
                     <div className="flex items-center gap-2">

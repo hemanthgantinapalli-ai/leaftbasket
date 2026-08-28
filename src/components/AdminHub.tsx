@@ -406,7 +406,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
               <button
                 type="submit"
                 id="admin-login-submit-btn"
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                    className="w-full py-3.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 <KeyRound className="w-4 h-4" />
                 <span>Authorize & Open Dark Store Console</span>
@@ -507,7 +507,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
               <button
                 type="submit"
                 id="admin-register-submit-btn"
-                className="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
+                className="w-full py-3.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>Create Staff Account & Sign In</span>
@@ -1047,7 +1047,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
         <div className="space-y-4">
           {/* Controls Bar */}
           <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+            <div className="flex items-center gap-3 flex-1 min-w-60">
               <div className="relative flex-1 max-w-sm">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                 <input

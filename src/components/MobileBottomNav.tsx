@@ -137,7 +137,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <User className="w-5 h-5 stroke-[1.75]" />
           )}
         </div>
-        <span className="text-[10px] mt-1 tracking-tight truncate max-w-[50px]">
+        <span className="text-[10px] mt-1 tracking-tight truncate max-w-12.5">
           {currentUser ? "Orders" : "Account"}
         </span>
       </button>

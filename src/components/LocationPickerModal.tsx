@@ -351,7 +351,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
           <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
           {/* Header */}
-          <div className="p-3.5 sm:p-5 bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white flex items-center justify-between shrink-0">
+          <div className="p-3.5 sm:p-5 bg-linear-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5 sm:gap-3">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-emerald-200 shadow-inner shrink-0">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -377,7 +377,7 @@ export const LocationPickerModal: React.FC<LocationPickerModalProps> = ({
 
           <div className="p-3.5 sm:p-5 space-y-3.5 sm:space-y-4 flex-1 overflow-y-auto pb-safe">
             {/* Primary Action: Live GPS & Network Detection */}
-            <div className="bg-gradient-to-br from-emerald-50 via-teal-50/50 to-stone-50 p-3.5 rounded-2xl border border-emerald-300/80 shadow-xs space-y-2">
+            <div className="bg-linear-to-br from-emerald-50 via-teal-50/50 to-stone-50 p-3.5 rounded-2xl border border-emerald-300/80 shadow-xs space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">

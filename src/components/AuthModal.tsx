@@ -96,7 +96,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mt-2.5 mb-1 sm:hidden shrink-0" />
 
           {/* Header */}
-          <div className="p-5 sm:p-6 bg-gradient-to-tr from-emerald-900 via-teal-900 to-emerald-950 text-white relative shrink-0">
+          <div className="p-5 sm:p-6 bg-linear-to-tr from-emerald-900 via-teal-900 to-emerald-950 text-white relative shrink-0">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
