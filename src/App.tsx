@@ -486,8 +486,10 @@ export default function App() {
     loadInitialData();
   }, []);
 
+  const canViewAllOrders = currentTab === "rider-portal" || currentTab === "admin-hub";
+
   useEffect(() => {
-    if (!currentUser?.phone) return;
+    if (!currentUser?.phone || canViewAllOrders) return;
     fetchOrders(currentUser.phone)
       .then((customerOrders) => {
         setOrders(customerOrders);
@@ -499,7 +501,14 @@ export default function App() {
         }
       })
       .catch((error) => console.error("Customer order load error:", error));
-  }, [currentUser?.phone]);
+  }, [currentUser?.phone, canViewAllOrders]);
+
+  useEffect(() => {
+    if (!canViewAllOrders) return;
+    fetchOrders()
+      .then((operationalOrders) => setOrders(operationalOrders))
+      .catch((error) => console.error("Operational order load error:", error));
+  }, [canViewAllOrders]);
 
   // Background polling for order status changes
   useEffect(() => {
@@ -508,7 +517,7 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        const freshOrders = await fetchOrders(currentUser?.phone);
+        const freshOrders = await fetchOrders(canViewAllOrders ? undefined : currentUser?.phone);
         freshOrders.forEach((fresh) => {
           const prevStatus = previousOrderStatusesRef.current[fresh.orderId];
           if (!prevStatus) {
