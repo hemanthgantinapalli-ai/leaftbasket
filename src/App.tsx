@@ -20,6 +20,7 @@ import {
   configureMongoURI,
   placeOrder,
   updateOrderStatus,
+  assignOrderRider,
   updateOrderLocation,
   createProduct,
   updateProduct,
@@ -214,6 +215,14 @@ export default function App() {
       title = "Order Confirmed & Received! ⚡";
       message = customNote || `Order #${order.orderId} received at Indiranagar Dark Store #04. Sourcing 4 AM harvest.`;
       soundType = "placed";
+    } else if (newStatus === "assigned") {
+      title = "Rider Assignment Created";
+      message = customNote || `Order #${order.orderId} is waiting for ${order.riderDetails?.name || "a rider"} to accept.`;
+      soundType = "status_update";
+    } else if (newStatus === "accepted") {
+      title = "Rider Accepted the Order";
+      message = customNote || `${order.riderDetails?.name || "Your rider"} accepted order #${order.orderId} and will prepare it for delivery.`;
+      soundType = "status_update";
     } else if (newStatus === "packed") {
       title = "Order Packed & Sealed 📦";
       message = customNote || `Carefully packed with cold-chain ice gel packs and assigned for dispatch.`;
@@ -367,7 +376,9 @@ export default function App() {
         const freshOrders = await fetchOrders();
         freshOrders.forEach((fresh) => {
           const prevStatus = previousOrderStatusesRef.current[fresh.orderId];
-          if (prevStatus && prevStatus !== fresh.orderStatus) {
+          if (!prevStatus) {
+            triggerOrderStatusAlert(fresh, "placed", `New order #${fresh.orderId} received from ${fresh.customerName}.`);
+          } else if (prevStatus !== fresh.orderStatus) {
             const lastNote = fresh.statusTimeline?.[fresh.statusTimeline.length - 1]?.note;
             triggerOrderStatusAlert(fresh, fresh.orderStatus, lastNote);
           }
@@ -520,6 +531,13 @@ export default function App() {
 
     // Trigger status transition notification & sound chime
     triggerOrderStatusAlert(updated, status, note);
+  };
+
+  const handleAssignOrderRider = async (orderId: string, riderId: string) => {
+    const updated = await assignOrderRider(orderId, riderId);
+    previousOrderStatusesRef.current[orderId] = updated.orderStatus;
+    setOrders((prev) => prev.map((order) => (order.orderId === orderId ? updated : order)));
+    triggerOrderStatusAlert(updated, "assigned", `Order #${orderId} assigned to ${updated.riderDetails?.name || "a delivery rider"}.`);
   };
 
   // Rider location update simulation
@@ -837,11 +855,13 @@ export default function App() {
           <AdminHub
             products={products}
             orders={orders}
+            riders={riders}
             categories={categories}
             onAddProduct={handleAddProduct}
             onUpdateProduct={handleUpdateProduct}
             onDeleteProduct={handleDeleteProduct}
             onUpdateOrderStatus={handleUpdateOrderStatus}
+            onAssignOrderRider={handleAssignOrderRider}
           />
         )}
       </main>

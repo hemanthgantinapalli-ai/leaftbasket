@@ -293,18 +293,6 @@ export async function createOrder(orderPayload: any) {
   const generatedId = `LB-${Math.floor(10000 + Math.random() * 90000)}`;
   const otp = `${Math.floor(1000 + Math.random() * 9000)}`;
   
-  // Assign nearest available rider or default
-  const assignedRider: any = memRiders[0] || {
-    riderId: "rider-rajesh-01",
-    name: "Rajesh K.",
-    phone: "+91 98452 38471",
-    vehicleNumber: "KA 01 EJ 7892",
-    rating: 4.95,
-    photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    lat: 12.9724,
-    lng: 77.6385,
-  };
-
   const newOrder = {
     ...orderPayload,
     orderId: generatedId,
@@ -317,16 +305,6 @@ export async function createOrder(orderPayload: any) {
         note: "Order confirmed at Leafbasket Indiranagar Dark Store #04",
       },
     ],
-    riderDetails: {
-      riderId: assignedRider.riderId,
-      name: assignedRider.name,
-      phone: assignedRider.phone,
-      vehicleNumber: assignedRider.vehicleNumber,
-      rating: assignedRider.rating,
-      photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-      lat: assignedRider.currentLocation ? assignedRider.currentLocation.lat : 12.9724,
-      lng: assignedRider.currentLocation ? assignedRider.currentLocation.lng : 77.6385,
-    },
     etaMinutes: 10,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -343,6 +321,48 @@ export async function createOrder(orderPayload: any) {
 
   memOrders.unshift(newOrder);
   return newOrder;
+}
+
+export async function assignOrderRider(orderId: string, riderId: string) {
+  const rider: any = memRiders.find((item) => item.riderId === riderId);
+  if (!rider) return null;
+
+  const riderDetails = {
+    riderId: rider.riderId,
+    name: rider.name,
+    phone: rider.phone,
+    vehicleNumber: rider.vehicleNumber,
+    rating: rider.rating,
+    photo: rider.photo,
+    lat: rider.currentLocation?.lat || 12.9724,
+    lng: rider.currentLocation?.lng || 77.6385,
+  };
+  const timelineItem = {
+    status: "assigned",
+    timestamp: new Date(),
+    note: `Order assigned to ${rider.name}. Waiting for rider acceptance.`,
+  };
+
+  if (isMongoActive()) {
+    try {
+      const updated = await (OrderModel as any).findOneAndUpdate(
+        { orderId },
+        { $set: { orderStatus: "assigned", riderDetails, updatedAt: new Date() }, $push: { statusTimeline: timelineItem } },
+        { new: true }
+      ).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB assignOrderRider error:", e);
+    }
+  }
+
+  const idx = memOrders.findIndex((order) => order.orderId === orderId);
+  if (idx === -1) return null;
+  memOrders[idx].orderStatus = "assigned";
+  memOrders[idx].riderDetails = riderDetails;
+  memOrders[idx].updatedAt = new Date();
+  memOrders[idx].statusTimeline = [...(memOrders[idx].statusTimeline || []), timelineItem];
+  return memOrders[idx];
 }
 
 export async function updateOrderStatus(orderId: string, status: string, note?: string) {

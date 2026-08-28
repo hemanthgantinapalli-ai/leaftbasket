@@ -90,7 +90,7 @@ const OrderSchema = new Schema<IOrder>(
     paymentStatus: { type: String, default: "paid" },
     orderStatus: {
       type: String,
-      enum: ["placed", "packed", "out_for_delivery", "delivered", "cancelled"],
+      enum: ["placed", "assigned", "accepted", "packed", "out_for_delivery", "delivered", "cancelled"],
       default: "placed",
     },
     statusTimeline: [

@@ -136,6 +136,16 @@ export async function updateOrderStatus(orderId: string, status: string, note?: 
   return res.json();
 }
 
+export async function assignOrderRider(orderId: string, riderId: string): Promise<Order> {
+  const res = await fetch(`${BASE_URL}/orders/${orderId}/assign`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ riderId }),
+  });
+  if (!res.ok) throw new Error("Failed to assign rider");
+  return res.json();
+}
+
 export async function updateOrderLocation(orderId: string, lat: number, lng: number, etaMinutes?: number): Promise<Order> {
   const res = await fetch(`${BASE_URL}/orders/${orderId}/location`, {
     method: "PATCH",

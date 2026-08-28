@@ -11,6 +11,7 @@ import {
   getOrders,
   getOrderById,
   createOrder,
+  assignOrderRider,
   updateOrderStatus,
   updateOrderRiderLocation,
   getCoupons,
@@ -249,6 +250,18 @@ apiRouter.patch("/orders/:id/status", async (req, res) => {
     res.json(updated);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to update status" });
+  }
+});
+
+apiRouter.patch("/orders/:id/assign", async (req, res) => {
+  try {
+    const { riderId } = req.body;
+    if (!riderId) return res.status(400).json({ error: "Missing 'riderId' in request body" });
+    const updated = await assignOrderRider(req.params.id, riderId);
+    if (!updated) return res.status(404).json({ error: "Order or rider not found" });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to assign rider" });
   }
 });
 

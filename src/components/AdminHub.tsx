@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Product, Order, Category } from "../types";
+import { Product, Order, Category, Rider } from "../types";
 import {
   PackagePlus,
   TrendingUp,
@@ -44,21 +44,25 @@ import { motion, AnimatePresence } from "motion/react";
 interface AdminHubProps {
   products: Product[];
   orders: Order[];
+  riders: Rider[];
   categories: Category[];
   onAddProduct: (product: Partial<Product>) => Promise<void>;
   onUpdateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
   onDeleteProduct: (id: string) => Promise<void>;
   onUpdateOrderStatus: (orderId: string, status: string, note?: string) => Promise<void>;
+  onAssignOrderRider: (orderId: string, riderId: string) => Promise<void>;
 }
 
 export const AdminHub: React.FC<AdminHubProps> = ({
   products,
   orders,
+  riders,
   categories,
   onAddProduct,
   onUpdateProduct,
   onDeleteProduct,
   onUpdateOrderStatus,
+  onAssignOrderRider,
 }) => {
   // Session Authentication state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -895,7 +899,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
               <span className="font-bold text-stone-500 uppercase tracking-wider text-[11px]">
                 Filter Status:
               </span>
-              {["all", "placed", "packed", "out_for_delivery", "delivered", "cancelled"].map((st) => (
+              {["all", "placed", "assigned", "accepted", "packed", "out_for_delivery", "delivered", "cancelled"].map((st) => (
                 <button
                   key={st}
                   type="button"
@@ -928,6 +932,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     <th className="p-4">Amount & Mode</th>
                     <th className="p-4">Current Status</th>
                     <th className="p-4">Fast Transition</th>
+                    <th className="p-4">Rider</th>
                     <th className="p-4 text-right">Action</th>
                   </tr>
                 </thead>
@@ -986,10 +991,27 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                           className="bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:outline-emerald-600 cursor-pointer shadow-2xs"
                         >
                           <option value="placed">Placed</option>
+                          <option value="assigned">Assigned</option>
+                          <option value="accepted">Rider Accepted</option>
                           <option value="packed">Packed in Pod</option>
                           <option value="out_for_delivery">Out for Delivery</option>
                           <option value="delivered">Delivered</option>
                           <option value="cancelled">Cancelled</option>
+                        </select>
+                      </td>
+
+                      <td className="p-4 whitespace-nowrap">
+                        <select
+                          value={o.riderDetails?.riderId || ""}
+                          onChange={(e) => e.target.value && onAssignOrderRider(o.orderId, e.target.value)}
+                          className="bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:outline-emerald-600 cursor-pointer shadow-2xs"
+                        >
+                          <option value="">Assign rider...</option>
+                          {riders.map((rider) => (
+                            <option key={rider.riderId} value={rider.riderId}>
+                              {rider.name} · {rider.currentStatus}
+                            </option>
+                          ))}
                         </select>
                       </td>
 

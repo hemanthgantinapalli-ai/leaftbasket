@@ -126,7 +126,7 @@ export interface Order {
   totalAmount: number;
   paymentMethod: "cod" | "upi" | "card" | "wallet";
   paymentStatus: "pending" | "paid" | "failed";
-  orderStatus: "placed" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
+  orderStatus: "placed" | "assigned" | "accepted" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
   statusTimeline: OrderTimelineItem[];
   riderDetails?: RiderDetails;
   riderLocation?: {
@@ -189,7 +189,7 @@ export interface AppNotification {
   type: "order_status" | "delivery" | "promo" | "system";
   title: string;
   message: string;
-  status?: "placed" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
+  status?: "placed" | "assigned" | "accepted" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
   etaMinutes?: number;
   timestamp: string;
   read: boolean;

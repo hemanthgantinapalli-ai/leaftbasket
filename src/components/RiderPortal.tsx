@@ -465,7 +465,8 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
   // ----------------------------------------------------
   // Authenticated State: Professional Real-Time Delivery Console
   // ----------------------------------------------------
-  const activeOrder = orders.find((o) => o.orderId === selectedOrderId) || orders[0];
+  const riderOrders = orders.filter((order) => order.riderDetails?.riderId === currentRider.riderId);
+  const activeOrder = riderOrders.find((o) => o.orderId === selectedOrderId) || riderOrders[0];
 
   const handleVerifyOTP = async () => {
     if (!activeOrder) return;
@@ -486,6 +487,11 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
       `Delivered on doorstep by ${currentRider.name} (Customer PIN verified)`
     );
     setOtpInput("");
+  };
+
+  const handleAcceptOrder = async () => {
+    if (!activeOrder || activeOrder.orderStatus !== "assigned") return;
+    await onUpdateStatus(activeOrder.orderId, "accepted", `Order accepted by ${currentRider.name}`);
   };
 
   const handleSimulateGPSMove = async () => {
@@ -554,14 +560,14 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
         {/* Left Column: Assigned Queue */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-black text-stone-500 uppercase tracking-wider px-1">
-            <span>Assigned Drops ({orders.length})</span>
+            <span>Assigned Drops ({riderOrders.length})</span>
             <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold">
               10-min Priority
             </span>
           </div>
 
           <div className="space-y-2.5">
-            {orders.map((o) => (
+            {riderOrders.map((o) => (
               <button
                 key={o.orderId}
                 type="button"
@@ -578,6 +584,8 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
                     className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase ${
                       o.orderStatus === "delivered"
                         ? "bg-emerald-100 text-emerald-800"
+                        : o.orderStatus === "assigned"
+                        ? "bg-orange-100 text-orange-800 animate-pulse"
                         : o.orderStatus === "out_for_delivery"
                         ? "bg-indigo-100 text-indigo-800 animate-pulse"
                         : "bg-amber-100 text-amber-900"
@@ -645,12 +653,20 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
                 <div className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2.5">
                   10-Minute SLA Milestone Progress
                 </div>
+                {activeOrder.orderStatus === "assigned" && (
+                  <button
+                    type="button"
+                    onClick={handleAcceptOrder}
+                    className="w-full mb-3 py-3 px-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-black uppercase tracking-wider transition cursor-pointer"
+                  >
+                    Accept Delivery Assignment
+                  </button>
+                )}
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   <button
                     type="button"
-                    onClick={() =>
-                      onUpdateStatus(activeOrder.orderId, "packed", "Rider loaded secure thermal pod")
-                    }
+                    onClick={() => onUpdateStatus(activeOrder.orderId, "packed", "Rider loaded secure thermal pod")}
+                    disabled={activeOrder.orderStatus !== "accepted" && activeOrder.orderStatus !== "packed"}
                     className={`py-3 px-2 rounded-2xl border text-xs font-black uppercase tracking-wider transition cursor-pointer text-center ${
                       activeOrder.orderStatus === "packed"
                         ? "bg-emerald-800 text-white border-emerald-800 shadow-md"
@@ -665,6 +681,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
                     onClick={() =>
                       onUpdateStatus(activeOrder.orderId, "out_for_delivery", "Ather EV en route to doorstep")
                     }
+                    disabled={activeOrder.orderStatus !== "packed" && activeOrder.orderStatus !== "out_for_delivery"}
                     className={`py-3 px-2 rounded-2xl border text-xs font-black uppercase tracking-wider transition cursor-pointer text-center ${
                       activeOrder.orderStatus === "out_for_delivery"
                         ? "bg-emerald-800 text-white border-emerald-800 shadow-md"
@@ -679,6 +696,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
                     onClick={() =>
                       onUpdateStatus(activeOrder.orderId, "delivered", "Delivered on doorstep")
                     }
+                    disabled={activeOrder.orderStatus !== "out_for_delivery" && activeOrder.orderStatus !== "delivered"}
                     className={`py-3 px-2 rounded-2xl border text-xs font-black uppercase tracking-wider transition cursor-pointer text-center ${
                       activeOrder.orderStatus === "delivered"
                         ? "bg-emerald-800 text-white border-emerald-800 shadow-md"
