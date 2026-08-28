@@ -1389,10 +1389,10 @@ export const AdminHub: React.FC<AdminHubProps> = ({
           <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-6">
             <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-4">
               <div>
-                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">Customer Accounts</h3>
-                <p className="text-xs text-stone-500 mt-1">Review registered users and manage account access.</p>
+                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">All Accounts</h3>
+                <p className="text-xs text-stone-500 mt-1">Review customer, rider, and administrator account information.</p>
               </div>
-              <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl">{users.length} total</span>
+              <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl">{users.length + riders.length + 1} total</span>
             </div>
             {users.length === 0 ? (
               <div className="py-12 text-center text-sm text-stone-400">No saved user profiles yet. Profiles appear after a user saves their account.</div>
@@ -1416,6 +1416,58 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                 </table>
               </div>
             )}
+          </div>
+
+          <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-6">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-4">
+              <div>
+                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">Rider Accounts</h3>
+                <p className="text-xs text-stone-500 mt-1">Review delivery partners, approval, availability, and hub details.</p>
+              </div>
+              <span className="text-xs font-black text-amber-800 bg-amber-50 px-3 py-1.5 rounded-xl">{riders.length} riders</span>
+            </div>
+            {riders.length === 0 ? (
+              <div className="py-10 text-center text-sm text-stone-400">No rider accounts registered yet.</div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-stone-50 text-stone-500 font-bold uppercase tracking-wider">
+                    <tr><th className="p-3">Rider</th><th className="p-3">Contact</th><th className="p-3">Vehicle / Hub</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {riders.map((rider) => (
+                      <tr key={rider.riderId} className="hover:bg-stone-50/70">
+                        <td className="p-3"><div className="font-bold text-stone-900">{rider.name}</div><div className="text-[10px] text-stone-400 font-mono">{rider.riderId}</div></td>
+                        <td className="p-3 text-stone-700">{rider.phone}</td>
+                        <td className="p-3"><div className="text-stone-700">{rider.vehicleNumber}</div><div className="text-[10px] text-stone-400">{rider.hub || "Hub not set"}</div></td>
+                        <td className="p-3"><span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${rider.isBlocked ? "bg-rose-100 text-rose-800" : rider.isApproved === false ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{rider.isBlocked ? "Blocked" : rider.isApproved === false ? "Pending" : rider.currentStatus}</span></td>
+                        <td className="p-3 text-right whitespace-nowrap">
+                          {rider.isApproved === false && <button type="button" onClick={() => onApproveRider(rider.riderId)} className="px-2.5 py-1.5 rounded-lg bg-emerald-100 text-emerald-800 font-black text-[10px] cursor-pointer">Approve</button>}
+                          <button type="button" onClick={() => onSetRiderBlocked(rider.riderId, !rider.isBlocked)} className="ml-1.5 px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-700 font-black text-[10px] cursor-pointer">{rider.isBlocked ? "Unblock" : "Block"}</button>
+                          <button type="button" onClick={() => { if (confirm(`Delete rider account for ${rider.name}?`)) onDeleteRider(rider.riderId); }} className="ml-1.5 px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-700 hover:bg-rose-100 hover:text-rose-800 font-black text-[10px] cursor-pointer">Delete</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-6">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-4">
+              <div>
+                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">Administrator Account</h3>
+                <p className="text-xs text-stone-500 mt-1">Current administrator identity and assigned company hub.</p>
+              </div>
+              <span className="text-xs font-black text-blue-800 bg-blue-50 px-3 py-1.5 rounded-xl">Admin</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 text-xs">
+              <div><div className="text-stone-400 font-bold uppercase">Name</div><div className="font-bold text-stone-900 mt-1">{adminName}</div></div>
+              <div><div className="text-stone-400 font-bold uppercase">Email</div><div className="font-bold text-stone-900 mt-1 break-all">{adminEmail}</div></div>
+              <div><div className="text-stone-400 font-bold uppercase">Role</div><div className="font-bold text-stone-900 mt-1">{activeAdminRole}</div></div>
+              <div><div className="text-stone-400 font-bold uppercase">Company Hub</div><div className="font-bold text-stone-900 mt-1">{adminHubLocation}</div></div>
+            </div>
           </div>
         </div>
       )}
