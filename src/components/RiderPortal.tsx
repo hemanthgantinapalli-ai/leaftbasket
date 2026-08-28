@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Order, Rider } from "../types";
 import {
   Bike,
@@ -26,6 +26,7 @@ import {
   Radio,
   ExternalLink,
   ChevronRight,
+  Edit3,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -34,6 +35,7 @@ interface RiderPortalProps {
   riders: Rider[];
   onUpdateStatus: (orderId: string, status: string, note?: string) => Promise<void>;
   onUpdateLocation: (orderId: string, lat: number, lng: number, etaMinutes?: number) => Promise<void>;
+  onSaveRiderProfile: (rider: Rider) => Promise<void>;
 }
 
 export const RiderPortal: React.FC<RiderPortalProps> = ({
@@ -41,6 +43,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
   riders,
   onUpdateStatus,
   onUpdateLocation,
+  onSaveRiderProfile,
 }) => {
   // Rider Authentication State
   const [isRiderLoggedIn, setIsRiderLoggedIn] = useState<boolean>(() => {
@@ -93,6 +96,30 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
 
   // Shift & Earnings stats
   const [shiftStatus, setShiftStatus] = useState<"on_duty" | "break">("on_duty");
+  const [isEditingRiderProfile, setIsEditingRiderProfile] = useState(false);
+  const [riderProfileForm, setRiderProfileForm] = useState({ name: currentRider.name, phone: currentRider.phone, vehicleNumber: currentRider.vehicleNumber, hub: currentRider.hub || "Dark Store #04 - Indiranagar, Bengaluru" });
+  const [riderProfileError, setRiderProfileError] = useState<string | null>(null);
+  const [isSavingRiderProfile, setIsSavingRiderProfile] = useState(false);
+
+  useEffect(() => {
+    setRiderProfileForm({ name: currentRider.name, phone: currentRider.phone, vehicleNumber: currentRider.vehicleNumber, hub: currentRider.hub || "Dark Store #04 - Indiranagar, Bengaluru" });
+  }, [currentRider]);
+
+  const handleSaveRiderProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingRiderProfile(true);
+    setRiderProfileError(null);
+    try {
+      const updated = { ...currentRider, ...riderProfileForm };
+      await onSaveRiderProfile(updated);
+      setCurrentRider(updated);
+      setIsEditingRiderProfile(false);
+    } catch (error: any) {
+      setRiderProfileError(error.message || "Could not save rider profile.");
+    } finally {
+      setIsSavingRiderProfile(false);
+    }
+  };
 
   const handleRiderLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -553,6 +580,30 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
             <span>End Shift</span>
           </button>
         </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-xs font-black uppercase tracking-wider text-stone-900">Rider Profile & Delivery Hub</div>
+            <div className="text-[11px] text-stone-500 mt-1">{currentRider.phone} · {currentRider.hub || "Dark Store #04 - Indiranagar, Bengaluru"}</div>
+          </div>
+          <button type="button" onClick={() => setIsEditingRiderProfile((value) => !value)} className="text-xs font-bold text-emerald-700 flex items-center gap-1 cursor-pointer">
+            <Edit3 className="w-3.5 h-3.5" /> Edit
+          </button>
+        </div>
+        {isEditingRiderProfile && (
+          <form onSubmit={handleSaveRiderProfile} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <input value={riderProfileForm.name} onChange={(e) => setRiderProfileForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="Full name" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <input value={riderProfileForm.phone} onChange={(e) => setRiderProfileForm((prev) => ({ ...prev, phone: e.target.value }))} placeholder="Phone" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <input value={riderProfileForm.vehicleNumber} onChange={(e) => setRiderProfileForm((prev) => ({ ...prev, vehicleNumber: e.target.value }))} placeholder="Vehicle number" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <div className="flex gap-2">
+              <input value={riderProfileForm.hub} onChange={(e) => setRiderProfileForm((prev) => ({ ...prev, hub: e.target.value }))} placeholder="Hub address" required className="min-w-0 flex-1 p-2.5 border border-stone-300 rounded-xl text-xs" />
+              <button type="submit" disabled={isSavingRiderProfile} className="px-3 rounded-xl bg-emerald-700 text-white text-xs font-bold disabled:opacity-60 cursor-pointer">{isSavingRiderProfile ? "Saving" : "Save"}</button>
+            </div>
+            {riderProfileError && <div className="sm:col-span-2 lg:col-span-4 text-xs text-rose-700 font-semibold">{riderProfileError}</div>}
+          </form>
+        )}
       </div>
 
       {/* Main Console Layout */}

@@ -9,6 +9,36 @@ export async function fetchDBStatus(): Promise<DatabaseStatus> {
   return data.database;
 }
 
+export async function updateUserProfile(userId: string, profile: {
+  name: string;
+  phone: string;
+  email?: string;
+  savedAddresses?: string[];
+}): Promise<typeof profile & { id: string }> {
+  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(profile),
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || "Failed to update profile");
+  }
+  return res.json();
+}
+
+export async function updateAdminProfile(adminId: string, profile: { name: string; email: string; hub: string; role: string }) {
+  const res = await fetch(`${BASE_URL}/admins/${encodeURIComponent(adminId)}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
+  if (!res.ok) throw new Error("Failed to update administrator profile");
+  return res.json();
+}
+
+export async function updateRiderProfile(riderId: string, profile: { name: string; phone: string; vehicleNumber: string; hub: string }) {
+  const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}/profile`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
+  if (!res.ok) throw new Error("Failed to update rider profile");
+  return res.json();
+}
+
 export async function configureMongoURI(uri: string): Promise<{ success: boolean; message: string; status: DatabaseStatus }> {
   const res = await fetch(`${BASE_URL}/config/mongo-uri`, {
     method: "POST",

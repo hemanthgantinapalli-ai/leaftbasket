@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   X,
   User,
@@ -18,6 +18,7 @@ import {
   Bike,
   Plus,
   LogOut,
+  Edit3,
   Calendar,
   CreditCard,
   CheckCircle2,
@@ -43,6 +44,7 @@ interface UserProfileModalProps {
   currentUser: UserProfile | null;
   onLogout: () => void;
   onLoginSuccess: (user: UserProfile) => void;
+  onSaveProfile: (user: UserProfile) => Promise<void>;
   orders: Order[];
   products: Product[];
   onReorderAll: (items: { productId: string; name: string; price: number; quantity: number; unit: string; image: string }[]) => void;
@@ -180,6 +182,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   currentUser,
   onLogout,
   onLoginSuccess,
+  onSaveProfile,
   orders,
   products,
   onReorderAll,
@@ -193,6 +196,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [reorderedOrderId, setReorderedOrderId] = useState<string | null>(null);
   const [reorderedItemId, setReorderedItemId] = useState<string | null>(null);
   const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<Order | Partial<Order> | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: "", phone: "", email: "" });
+  const [profileSaveError, setProfileSaveError] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isEditingAddresses, setIsEditingAddresses] = useState(false);
+  const [addressForm, setAddressForm] = useState("");
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileForm({
+        name: currentUser.name,
+        phone: currentUser.phone,
+        email: currentUser.email || "",
+      });
+      setAddressForm((currentUser.savedAddresses || []).join("\n"));
+    }
+  }, [currentUser]);
 
   // Quick Sign In state if user is not logged in
   const [loginPhone, setLoginPhone] = useState("");
@@ -233,6 +253,45 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     };
     onLoginSuccess(user);
     setIsOtpSent(false);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUser || !profileForm.name.trim() || !profileForm.phone.trim()) {
+      setProfileSaveError("Name and phone are required.");
+      return;
+    }
+
+    setIsSavingProfile(true);
+    setProfileSaveError(null);
+    try {
+      await onSaveProfile({
+        ...currentUser,
+        name: profileForm.name.trim(),
+        phone: profileForm.phone.trim(),
+        email: profileForm.email.trim() || undefined,
+      });
+      setIsEditingProfile(false);
+    } catch (error: any) {
+      setProfileSaveError(error.message || "Could not save profile.");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleSaveAddresses = async () => {
+    if (!currentUser) return;
+    setIsSavingProfile(true);
+    setProfileSaveError(null);
+    try {
+      const savedAddresses = addressForm.split("\n").map((address) => address.trim()).filter(Boolean);
+      await onSaveProfile({ ...currentUser, savedAddresses });
+      setIsEditingAddresses(false);
+    } catch (error: any) {
+      setProfileSaveError(error.message || "Could not save addresses.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleTriggerReorderAll = (order: Order | Partial<Order>) => {
@@ -627,11 +686,66 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             {activeTab === "profile" && (
               <div className="space-y-4">
                 <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-3">
-                  <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
                     <User className="w-4 h-4 text-emerald-700" />
                     <span>Personal Profile Details</span>
+                    </div>
+                    {!isEditingProfile && currentUser && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setProfileSaveError(null);
+                          setIsEditingProfile(true);
+                        }}
+                        className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 cursor-pointer"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                    )}
                   </div>
 
+                  {isEditingProfile ? (
+                    <form onSubmit={handleSaveProfile} className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <label>
+                        <span className="text-[11px] font-bold text-stone-500 block mb-1">Full Name</span>
+                        <input
+                          value={profileForm.name}
+                          onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
+                          className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-bold text-stone-900 focus:outline-emerald-600"
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span className="text-[11px] font-bold text-stone-500 block mb-1">Mobile Number</span>
+                        <input
+                          value={profileForm.phone}
+                          onChange={(e) => setProfileForm((prev) => ({ ...prev, phone: e.target.value }))}
+                          className="w-full p-2.5 bg-white border border-stone-300 rounded-xl font-mono text-stone-900 focus:outline-emerald-600"
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span className="text-[11px] font-bold text-stone-500 block mb-1">Email Address</span>
+                        <input
+                          type="email"
+                          value={profileForm.email}
+                          onChange={(e) => setProfileForm((prev) => ({ ...prev, email: e.target.value }))}
+                          className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 focus:outline-emerald-600"
+                        />
+                      </label>
+                      <div className="flex items-end gap-2">
+                        <button type="submit" disabled={isSavingProfile} className="px-4 py-2.5 rounded-xl bg-emerald-700 text-white font-bold hover:bg-emerald-800 disabled:opacity-60 cursor-pointer">
+                          {isSavingProfile ? "Saving..." : "Save Changes"}
+                        </button>
+                        <button type="button" onClick={() => setIsEditingProfile(false)} className="px-4 py-2.5 rounded-xl border border-stone-300 text-stone-700 font-bold hover:bg-white cursor-pointer">
+                          Cancel
+                        </button>
+                      </div>
+                      {profileSaveError && <div className="sm:col-span-2 text-rose-700 font-semibold">{profileSaveError}</div>}
+                    </form>
+                  ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div>
                       <label className="text-[11px] font-bold text-stone-500 block mb-1">Full Name</label>
@@ -662,6 +776,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
 
                 {/* Loyalty & Impact stats */}
@@ -706,24 +821,45 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className="space-y-3">
                 <div className="text-xs font-bold text-stone-900 flex items-center justify-between">
                   <span>Saved Delivery Locations</span>
-                  <span className="text-[11px] text-stone-400">Synced across devices</span>
+                  <button type="button" onClick={() => setIsEditingAddresses((value) => !value)} className="text-xs font-bold text-emerald-700 flex items-center gap-1 cursor-pointer">
+                    <Edit3 className="w-3.5 h-3.5" /> Edit
+                  </button>
                 </div>
 
+                {isEditingAddresses && (
+                  <div className="space-y-2">
+                    <textarea
+                      value={addressForm}
+                      onChange={(e) => setAddressForm(e.target.value)}
+                      rows={4}
+                      placeholder="One delivery address per line"
+                      className="w-full p-3 bg-white border border-stone-300 rounded-xl text-xs text-stone-800 focus:outline-emerald-600"
+                    />
+                    <div className="flex gap-2">
+                      <button type="button" onClick={handleSaveAddresses} disabled={isSavingProfile} className="px-4 py-2 rounded-xl bg-emerald-700 text-white font-bold text-xs disabled:opacity-60 cursor-pointer">{isSavingProfile ? "Saving..." : "Save Addresses"}</button>
+                      <button type="button" onClick={() => setIsEditingAddresses(false)} className="px-4 py-2 rounded-xl border border-stone-300 text-stone-700 font-bold text-xs cursor-pointer">Cancel</button>
+                    </div>
+                    {profileSaveError && <div className="text-xs text-rose-700 font-semibold">{profileSaveError}</div>}
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <div className="p-3.5 bg-white rounded-2xl border border-emerald-400 shadow-xs flex items-start justify-between">
+                  {(currentUser?.savedAddresses || [
+                    "Flat 402, Oakwood Heights, 12th Main Rd, Indiranagar, Bengaluru - 560038",
+                    "Prestige Tech Park, Block B, Outer Ring Rd, Marathahalli, Bengaluru - 560103",
+                  ]).map((address, index) => (
+                  <div key={address} className={`p-3.5 bg-white rounded-2xl border ${index === 0 ? "border-emerald-400" : "border-stone-200"} shadow-xs flex items-start justify-between`}>
                     <div className="flex items-start gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-                        🏠
+                        {index === 0 ? "🏠" : "🏢"}
                       </div>
                       <div>
                         <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
-                          <span>Home (Default)</span>
-                          <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
-                            Primary
-                          </span>
+                          <span>{index === 0 ? "Home (Default)" : `Saved Address ${index + 1}`}</span>
+                          {index === 0 && <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">Primary</span>}
                         </div>
                         <div className="text-xs text-stone-600 mt-0.5">
-                          Flat 402, Oakwood Heights, 12th Main Rd, Indiranagar, Bengaluru - 560038
+                          {address}
                         </div>
                         <div className="text-[11px] text-emerald-700 font-semibold mt-1">
                           ⚡ 8-10 Mins Dispatch Dark Store
@@ -731,23 +867,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  <div className="p-3.5 bg-white rounded-2xl border border-stone-200 hover:border-stone-300 shadow-xs flex items-start justify-between">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-stone-100 text-stone-700 flex items-center justify-center shrink-0">
-                        🏢
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-stone-900">Work Office</div>
-                        <div className="text-xs text-stone-600 mt-0.5">
-                          Prestige Tech Park, Block B, Outer Ring Rd, Marathahalli, Bengaluru - 560103
-                        </div>
-                        <div className="text-[11px] text-stone-500 font-medium mt-1">
-                          ⚡ 10-12 Mins Dispatch
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             )}

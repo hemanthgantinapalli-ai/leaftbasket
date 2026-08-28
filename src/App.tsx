@@ -21,6 +21,9 @@ import {
   placeOrder,
   updateOrderStatus,
   assignOrderRider,
+  updateUserProfile,
+  updateAdminProfile,
+  updateRiderProfile,
   updateOrderLocation,
   createProduct,
   updateProduct,
@@ -320,6 +323,34 @@ export default function App() {
     } catch (e) {
       console.warn("Could not remove user", e);
     }
+  };
+
+  const handleSaveUserProfile = async (user: UserProfile) => {
+    const saved = await updateUserProfile(user.id, {
+      name: user.name,
+      phone: user.phone,
+      email: user.email,
+      savedAddresses: user.savedAddresses,
+    });
+    handleUserLogin({ ...user, ...saved });
+  };
+
+  const handleSaveAdminProfile = async (profile: { name: string; email: string; hub: string; role: string }) => {
+    const saved = await updateAdminProfile(`adm-${profile.email.toLowerCase()}`, profile);
+    try {
+      sessionStorage.setItem("leafbasket_admin_email", saved.email);
+      sessionStorage.setItem("leafbasket_admin_role", saved.role);
+    } catch {}
+  };
+
+  const handleSaveRiderProfile = async (rider: Rider) => {
+    const saved = await updateRiderProfile(rider.riderId, {
+      name: rider.name,
+      phone: rider.phone,
+      vehicleNumber: rider.vehicleNumber,
+      hub: rider.hub || "Dark Store #04 - Indiranagar, Bengaluru",
+    });
+    setRiders((prev) => prev.map((item) => (item.riderId === saved.riderId ? saved : item)));
   };
 
   // Save cart changes
@@ -847,6 +878,7 @@ export default function App() {
             riders={riders}
             onUpdateStatus={handleUpdateOrderStatus}
             onUpdateLocation={handleUpdateOrderLocation}
+            onSaveRiderProfile={handleSaveRiderProfile}
           />
         )}
 
@@ -862,6 +894,7 @@ export default function App() {
             onDeleteProduct={handleDeleteProduct}
             onUpdateOrderStatus={handleUpdateOrderStatus}
             onAssignOrderRider={handleAssignOrderRider}
+            onSaveAdminProfile={handleSaveAdminProfile}
           />
         )}
       </main>
@@ -938,6 +971,7 @@ export default function App() {
         currentUser={currentUser}
         onLogout={handleUserLogout}
         onLoginSuccess={handleUserLogin}
+        onSaveProfile={handleSaveUserProfile}
         orders={orders}
         products={products}
         onReorderAll={handleReorderAll}

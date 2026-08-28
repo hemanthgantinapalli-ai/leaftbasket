@@ -51,6 +51,7 @@ interface AdminHubProps {
   onDeleteProduct: (id: string) => Promise<void>;
   onUpdateOrderStatus: (orderId: string, status: string, note?: string) => Promise<void>;
   onAssignOrderRider: (orderId: string, riderId: string) => Promise<void>;
+  onSaveAdminProfile: (profile: { name: string; email: string; hub: string; role: string }) => Promise<void>;
 }
 
 export const AdminHub: React.FC<AdminHubProps> = ({
@@ -63,6 +64,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   onDeleteProduct,
   onUpdateOrderStatus,
   onAssignOrderRider,
+  onSaveAdminProfile,
 }) => {
   // Session Authentication state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -117,6 +119,23 @@ export const AdminHub: React.FC<AdminHubProps> = ({
 
   // Edit product modal state
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isEditingAdminProfile, setIsEditingAdminProfile] = useState(false);
+  const [adminProfileError, setAdminProfileError] = useState<string | null>(null);
+  const [isSavingAdminProfile, setIsSavingAdminProfile] = useState(false);
+
+  const handleSaveAdminProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingAdminProfile(true);
+    setAdminProfileError(null);
+    try {
+      await onSaveAdminProfile({ name: adminName, email: adminEmail, hub: adminHubLocation, role: activeAdminRole });
+      setIsEditingAdminProfile(false);
+    } catch (error: any) {
+      setAdminProfileError(error.message || "Could not save administrator profile.");
+    } finally {
+      setIsSavingAdminProfile(false);
+    }
+  };
 
   // Metrics Calculations
   const totalRevenue = orders.reduce((sum, o) => sum + (o.paymentStatus === "paid" ? o.totalAmount : 0), 0);
@@ -612,6 +631,34 @@ export const AdminHub: React.FC<AdminHubProps> = ({
             <span>Lock</span>
           </button>
         </div>
+      </div>
+
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-xs font-black uppercase tracking-wider text-stone-900">Administrator Profile & Permissions</div>
+            <div className="text-[11px] text-stone-500 mt-1">{adminName || "Store administrator"} · {adminEmail}</div>
+          </div>
+          <button type="button" onClick={() => setIsEditingAdminProfile((value) => !value)} className="text-xs font-bold text-emerald-700 flex items-center gap-1 cursor-pointer">
+            <Edit3 className="w-3.5 h-3.5" /> Edit
+          </button>
+        </div>
+        {isEditingAdminProfile && (
+          <form onSubmit={handleSaveAdminProfile} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+            <input value={adminName} onChange={(e) => setAdminName(e.target.value)} placeholder="Full name" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} placeholder="Email" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <input value={adminHubLocation} onChange={(e) => setAdminHubLocation(e.target.value)} placeholder="Hub address" required className="p-2.5 border border-stone-300 rounded-xl text-xs" />
+            <div className="flex gap-2">
+              <select value={activeAdminRole} onChange={(e) => setActiveAdminRole(e.target.value)} className="min-w-0 flex-1 p-2.5 border border-stone-300 rounded-xl text-xs">
+                <option>Store Operations Director</option>
+                <option>Dispatch Lead</option>
+                <option>Catalog Curator</option>
+              </select>
+              <button type="submit" disabled={isSavingAdminProfile} className="px-3 rounded-xl bg-emerald-700 text-white text-xs font-bold disabled:opacity-60 cursor-pointer">{isSavingAdminProfile ? "Saving" : "Save"}</button>
+            </div>
+            {adminProfileError && <div className="sm:col-span-2 lg:col-span-4 text-xs text-rose-700 font-semibold">{adminProfileError}</div>}
+          </form>
+        )}
       </div>
 
       {/* Top 4 KPI Metric Cards */}

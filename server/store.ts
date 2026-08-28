@@ -3,6 +3,8 @@ import { ProductModel, IProduct } from "./models/Product.js";
 import { OrderModel, IOrder } from "./models/Order.js";
 import { CategoryModel, ICategory } from "./models/Category.js";
 import { RiderModel, IRider } from "./models/Rider.js";
+import { UserModel } from "./models/User.js";
+import { AdminModel } from "./models/Admin.js";
 import { CouponModel, ICoupon } from "./models/Coupon.js";
 import {
   INITIAL_CATEGORIES,
@@ -21,6 +23,73 @@ let memOrders: any[] = [...INITIAL_SAMPLE_ORDERS];
 
 export function isMongoActive(): boolean {
   return mongoose.connection.readyState === 1;
+}
+
+export async function updateUserProfile(userId: string, profile: any) {
+  const updates = {
+    name: String(profile.name || "").trim(),
+    phone: String(profile.phone || "").trim(),
+    email: profile.email ? String(profile.email).trim() : undefined,
+    savedAddresses: Array.isArray(profile.savedAddresses) ? profile.savedAddresses : [],
+  };
+  if (!updates.name || !updates.phone) return null;
+
+  if (isMongoActive()) {
+    try {
+      const updated = await UserModel.findOneAndUpdate(
+        { id: userId },
+        { $set: updates, $setOnInsert: { id: userId } },
+        { new: true, upsert: true, lean: true }
+      ).exec();
+      return updated;
+    } catch (e) {
+      console.warn("MongoDB updateUserProfile error:", e);
+    }
+  }
+
+  return { id: userId, ...updates };
+}
+
+export async function updateAdminProfile(adminId: string, profile: any) {
+  const updates = {
+    name: String(profile.name || "").trim(),
+    email: String(profile.email || "").trim(),
+    hub: String(profile.hub || "").trim(),
+    role: String(profile.role || "Store Operations Director").trim(),
+  };
+  if (!updates.name || !updates.email || !updates.hub) return null;
+  if (isMongoActive()) {
+    try {
+      return await AdminModel.findOneAndUpdate({ id: adminId }, { $set: updates, $setOnInsert: { id: adminId } }, { new: true, upsert: true, lean: true }).exec();
+    } catch (e) {
+      console.warn("MongoDB updateAdminProfile error:", e);
+    }
+  }
+  return { id: adminId, ...updates };
+}
+
+export async function updateRiderProfile(riderId: string, profile: any) {
+  const updates = {
+    name: String(profile.name || "").trim(),
+    phone: String(profile.phone || "").trim(),
+    vehicleNumber: String(profile.vehicleNumber || "").trim(),
+    hub: String(profile.hub || "").trim(),
+  };
+  if (!updates.name || !updates.phone || !updates.vehicleNumber || !updates.hub) return null;
+  if (isMongoActive()) {
+    try {
+      const updated = await (RiderModel as any).findOneAndUpdate({ riderId }, { $set: updates }, { new: true }).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB updateRiderProfile error:", e);
+    }
+  }
+  const idx = memRiders.findIndex((rider) => rider.riderId === riderId);
+  if (idx !== -1) {
+    memRiders[idx] = { ...memRiders[idx], ...updates };
+    return memRiders[idx];
+  }
+  return { riderId, ...updates };
 }
 
 export async function seedMongoIfEmpty() {

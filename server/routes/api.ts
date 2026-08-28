@@ -16,6 +16,9 @@ import {
   updateOrderRiderLocation,
   getCoupons,
   getRiders,
+  updateUserProfile,
+  updateAdminProfile,
+  updateRiderProfile,
   isMongoActive,
   seedMongoIfEmpty,
 } from "../store.js";
@@ -180,6 +183,36 @@ apiRouter.get("/orders/:id", async (req, res) => {
     res.json(order);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to fetch order" });
+  }
+});
+
+apiRouter.put("/users/:id", async (req, res) => {
+  try {
+    const updated = await updateUserProfile(req.params.id, req.body);
+    if (!updated) return res.status(400).json({ error: "Name and phone are required" });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to update profile" });
+  }
+});
+
+apiRouter.put("/admins/:id", async (req, res) => {
+  try {
+    const updated = await updateAdminProfile(req.params.id, req.body);
+    if (!updated) return res.status(400).json({ error: "Name, email, and hub are required" });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to update administrator profile" });
+  }
+});
+
+apiRouter.put("/riders/:id/profile", async (req, res) => {
+  try {
+    const updated = await updateRiderProfile(req.params.id, req.body);
+    if (!updated) return res.status(400).json({ error: "Name, phone, and vehicle are required" });
+    res.json(updated);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || "Failed to update rider profile" });
   }
 });
 
