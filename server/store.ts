@@ -485,16 +485,27 @@ export async function getOrders(phone?: string) {
   if (isMongoActive()) {
     try {
       const query: any = phone ? { customerPhone: phone } : {};
-      return await OrderModel.find(query).sort({ createdAt: -1 }).lean().exec();
+      const [orders, riders] = await Promise.all([
+        OrderModel.find(query).sort({ createdAt: -1 }).lean().exec(),
+        RiderModel.find().select({ riderId: 1 }).lean().exec(),
+      ]);
+      const riderIds = new Set(riders.map((rider) => rider.riderId));
+      return orders.map((order: any) => riderIds.has(order.riderDetails?.riderId)
+        ? order
+        : { ...order, riderDetails: undefined });
     } catch (e) {
       console.warn("MongoDB getOrders error:", e);
     }
   }
 
+  const riderIds = new Set(memRiders.map((rider) => rider.riderId));
+  const visibleOrders = memOrders.map((order) => riderIds.has(order.riderDetails?.riderId)
+    ? order
+    : { ...order, riderDetails: undefined });
   if (phone) {
-    return memOrders.filter((o) => o.customerPhone === phone);
+    return visibleOrders.filter((o) => o.customerPhone === phone);
   }
-  return memOrders;
+  return visibleOrders;
 }
 
 export async function getOrderById(orderId: string) {
@@ -525,7 +536,7 @@ export async function createOrder(orderPayload: any) {
         note: "Order confirmed at Leafbasket Indiranagar Dark Store #04",
       },
     ],
-    etaMinutes: 10,
+    etaMinutes: typeof orderPayload.etaMinutes === "number" ? orderPayload.etaMinutes : 10,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -547,12 +558,16 @@ export async function assignOrderRider(orderId: string, riderId: string) {
   let rider: any = memRiders.find((item) => item.riderId === riderId);
   if (isMongoActive()) {
     try {
-      rider = await RiderModel.findOne({ riderId }).lean().exec();
+      rider = await RiderModel.findOneAndUpdate(
+        { riderId, isApproved: { $ne: false }, isBlocked: { $ne: true }, currentStatus: "idle" },
+        { $set: { currentStatus: "assigned", activeOrderId: orderId } },
+        { new: true }
+      ).lean().exec();
     } catch (e) {
       console.warn("MongoDB find rider for assignment error:", e);
     }
   }
-  if (!rider || rider.isApproved === false || rider.isBlocked || rider.currentStatus === "offline") return null;
+  if (!rider || rider.isApproved === false || rider.isBlocked || rider.currentStatus !== "idle") return null;
 
   const riderDetails = {
     riderId: rider.riderId,
@@ -585,6 +600,9 @@ export async function assignOrderRider(orderId: string, riderId: string) {
 
   const idx = memOrders.findIndex((order) => order.orderId === orderId);
   if (idx === -1) return null;
+  const riderIdx = memRiders.findIndex((item) => item.riderId === riderId && item.currentStatus === "idle");
+  if (riderIdx === -1) return null;
+  memRiders[riderIdx] = { ...memRiders[riderIdx], currentStatus: "assigned", activeOrderId: orderId };
   memOrders[idx].orderStatus = "assigned";
   memOrders[idx].riderDetails = riderDetails;
   memOrders[idx].updatedAt = new Date();
@@ -609,7 +627,12 @@ export async function updateOrderStatus(orderId: string, status: string, note?: 
         },
         { new: true }
       ).lean().exec();
-      if (updated) return updated;
+      if (updated) {
+        if (status === "delivered" || status === "cancelled") {
+          await RiderModel.updateOne({ riderId: updated.riderDetails?.riderId }, { $set: { currentStatus: "idle" }, $unset: { activeOrderId: 1 } }).exec();
+        }
+        return updated;
+      }
     } catch (e) {
       console.warn("MongoDB updateOrderStatus error:", e);
     }
@@ -620,6 +643,12 @@ export async function updateOrderStatus(orderId: string, status: string, note?: 
     memOrders[idx].orderStatus = status;
     memOrders[idx].updatedAt = new Date();
     memOrders[idx].statusTimeline = [...(memOrders[idx].statusTimeline || []), timelineItem];
+    if (status === "delivered" || status === "cancelled") {
+      const riderIdx = memRiders.findIndex((rider) => rider.riderId === memOrders[idx].riderDetails?.riderId);
+      if (riderIdx !== -1) {
+        memRiders[riderIdx] = { ...memRiders[riderIdx], currentStatus: "idle", activeOrderId: undefined };
+      }
+    }
     return memOrders[idx];
   }
   return null;
@@ -666,14 +695,32 @@ export async function getCoupons() {
   return memCoupons;
 }
 
-// Riders
-export async function getRiders() {
+export async function incrementCouponUsage(code: string) {
   if (isMongoActive()) {
     try {
-      return await RiderModel.find().lean().exec();
+      await CouponModel.updateOne({ code, isActive: true }, { $inc: { usageCount: 1 } }).exec();
+      return;
+    } catch (e) {
+      console.warn("MongoDB incrementCouponUsage error:", e);
+    }
+  }
+  const coupon = memCoupons.find((item) => item.code.toUpperCase() === code.toUpperCase() && item.isActive);
+  if (coupon) coupon.usageCount = (coupon.usageCount || 0) + 1;
+}
+
+// Riders
+export async function getRiders() {
+  const withoutPin = (rider: any) => {
+    const { pin, ...safeRider } = rider;
+    return safeRider;
+  };
+  if (isMongoActive()) {
+    try {
+      const riders = await RiderModel.find().select({ pin: 0 }).lean().exec();
+      return riders.map(withoutPin);
     } catch (e) {
       console.warn("MongoDB getRiders error:", e);
     }
   }
-  return memRiders;
+  return memRiders.map(withoutPin);
 }

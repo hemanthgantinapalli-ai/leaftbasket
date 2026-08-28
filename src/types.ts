@@ -82,6 +82,7 @@ export interface DeliveryAddress {
   landmark?: string;
   area: string;
   city: string;
+  state?: string;
   pincode: string;
   lat?: number;
   lng?: number;
@@ -114,6 +115,7 @@ export interface Order {
   deliveryAddress: DeliveryAddress;
   items: {
     productId: string;
+    itemId?: string;
     name: string;
     price: number;
     quantity: number;

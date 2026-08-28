@@ -22,7 +22,7 @@ import { LiveLeafletMap } from "./LiveLeafletMap";
 interface LiveOrderTrackingProps {
   order: Order | null;
   onBackToShop: () => void;
-  onUpdateStatus: (orderId: string, status: string, note?: string) => Promise<void>;
+  onUpdateStatus: (orderId: string, status: string, note?: string, otp?: string) => Promise<void>;
   onUpdateLocation: (orderId: string, lat: number, lng: number, etaMinutes?: number) => Promise<void>;
   onOpenReviewProduct?: (productTarget: { id: string; name: string; image: string; unit?: string; price?: number }) => void;
 }
@@ -69,7 +69,7 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
       note = "Packed at Indiranagar Dark Store #04 with ice gel packs";
     } else if (current === "packed") {
       nextStatus = "out_for_delivery";
-      note = "Rider Rajesh K. picked up order on Electric Ather 450X";
+      note = "Delivery rider picked up the order for dispatch";
     } else if (current === "out_for_delivery") {
       nextStatus = "delivered";
       note = "Delivered successfully! OTP verified.";
@@ -174,7 +174,7 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Live Map & Visual Scooter Route */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-gradient-to-br from-emerald-950 via-teal-950 to-stone-900 rounded-3xl text-white p-4 sm:p-8 relative overflow-hidden shadow-xl border border-emerald-900">
+          <div className="bg-linear-to-br from-emerald-950 via-teal-950 to-stone-900 rounded-3xl text-white p-4 sm:p-8 relative overflow-hidden shadow-xl border border-emerald-900">
             {/* Header ETA Banner */}
             <div className="flex flex-wrap items-start justify-between gap-3 sm:gap-4 relative z-10">
               <div>
@@ -224,9 +224,9 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
                   address: `${order.deliveryAddress.street}, ${order.deliveryAddress.area}`,
                 }}
                 riderLocation={{
-                  lat: order.riderLocation?.lat || 12.9745,
-                  lng: order.riderLocation?.lng || 77.6385,
-                  name: order.riderDetails?.name || "Rajesh (Ather 450X)",
+                  lat: order.riderLocation?.lat || order.riderDetails?.lat || 12.9745,
+                  lng: order.riderLocation?.lng || order.riderDetails?.lng || 77.6385,
+                  name: order.riderLocation?.name || order.riderDetails?.name || "Awaiting rider assignment",
                 }}
                 orderStatus={order.orderStatus}
                 isDelivered={isDelivered}
@@ -330,14 +330,14 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
               <div className="flex-1">
                 <div className="flex items-center justify-between">
                   <h4 className="font-extrabold text-sm text-stone-900">
-                    {order.riderDetails?.name || "Rajesh K."}
+                    {order.riderDetails?.name || "Rider not assigned"}
                   </h4>
                   <span className="text-xs font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
-                    ★ {order.riderDetails?.rating || "4.95"}
+                    {order.riderDetails?.rating ? `★ ${order.riderDetails.rating}` : "Assignment pending"}
                   </span>
                 </div>
                 <div className="text-xs text-stone-500 mt-0.5">
-                  {order.riderDetails?.vehicleNumber || "KA 01 EJ 7892"} (EV Scooter)
+                  {order.riderDetails ? `${order.riderDetails.vehicleNumber} (EV Scooter)` : "Awaiting delivery partner"}
                 </div>
                 <div className="flex items-center gap-1 text-[11px] text-emerald-700 font-semibold mt-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -348,7 +348,7 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
 
             <div className="mt-4 pt-3 border-t border-stone-100 grid grid-cols-2 gap-2">
               <a
-                href={`tel:${order.riderDetails?.phone || "+919845238471"}`}
+                    href={order.riderDetails ? `tel:${order.riderDetails.phone}` : undefined}
                 className="flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs py-2.5 rounded-xl transition cursor-pointer"
               >
                 <Phone className="w-3.5 h-3.5" />
@@ -376,7 +376,7 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
                   <div className="flex items-center gap-2 min-w-0">
                     <img src={it.image} alt={it.name} className="w-9 h-9 rounded-lg object-cover border shrink-0" />
                     <div className="min-w-0">
-                      <div className="font-semibold text-stone-800 truncate max-w-[140px]">{it.name}</div>
+                      <div className="font-semibold text-stone-800 truncate max-w-35">{it.name}</div>
                       <div className="text-[11px] text-stone-400">{it.unit} x {it.quantity}</div>
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export const LiveOrderTracking: React.FC<LiveOrderTrackingProps> = ({
               </div>
               <div className="flex justify-between">
                 <span>Delivering to:</span>
-                <span className="font-bold text-stone-800 truncate max-w-[170px]">{order.deliveryAddress.street}</span>
+                <span className="font-bold text-stone-800 truncate max-w-42.5">{order.deliveryAddress.street}</span>
               </div>
             </div>
           </div>

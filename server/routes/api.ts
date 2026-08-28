@@ -15,6 +15,7 @@ import {
   updateOrderStatus,
   updateOrderRiderLocation,
   getCoupons,
+  incrementCouponUsage,
   getRiders,
   updateUserProfile,
   getUsers,
@@ -242,13 +243,41 @@ apiRouter.put("/riders/:id/profile", async (req, res) => {
 
 apiRouter.post("/orders", async (req, res) => {
   try {
-    const { items, customerName, customerPhone, deliveryAddress, paymentMethod, couponCode, tipAmount } = req.body;
+    const { items, customerName, customerPhone, deliveryAddress, paymentMethod, couponCode, tipAmount, etaMinutes, notes } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: "Order must contain at least one item" });
     }
 
-    const itemTotal = items.reduce((sum: number, it: any) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+    const normalizedItems = items.map((item: any) => ({
+      ...item,
+      productId: String(item.productId || item.itemId || "").trim(),
+      itemId: String(item.itemId || item.productId || "").trim(),
+      unit: String(item.unit || "1 serving").trim(),
+      image: String(item.image || "").trim(),
+    }));
+    if (normalizedItems.some((item: any) => !item.productId)) {
+      return res.status(400).json({ error: "Each order item must include productId or itemId" });
+    }
+
+    const catalogItems = await Promise.all(normalizedItems.map((item: any) => getProductById(item.productId)));
+    if (catalogItems.some((product) => !product)) {
+      return res.status(400).json({ error: "One or more order items are no longer available" });
+    }
+    if (normalizedItems.some((item: any) => !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1)) {
+      return res.status(400).json({ error: "Item quantities must be positive whole numbers" });
+    }
+    if (normalizedItems.some((item: any, index: number) => !catalogItems[index]?.inStock || Number(item.quantity) > Number(catalogItems[index]?.stockCount || 0))) {
+      return res.status(400).json({ error: "One or more items are out of stock" });
+    }
+    const pricedItems = normalizedItems.map((item: any, index: number) => ({
+      ...item,
+      name: catalogItems[index]!.name,
+      price: catalogItems[index]!.price,
+      unit: catalogItems[index]!.unit,
+      image: catalogItems[index]!.image,
+    }));
+    const itemTotal = pricedItems.reduce((sum: number, it: any) => sum + it.price * it.quantity, 0);
     const packagingFee = 5;
     const deliveryFee = itemTotal >= 199 ? 0 : 25;
     let couponDiscount = 0;
@@ -256,7 +285,7 @@ apiRouter.post("/orders", async (req, res) => {
     if (couponCode) {
       const coupons = await getCoupons();
       const matched = coupons.find((c: any) => c.code.toUpperCase() === String(couponCode).toUpperCase() && c.isActive);
-      if (matched && itemTotal >= matched.minOrderAmount) {
+      if (matched && new Date(matched.validUntil).getTime() > Date.now() && itemTotal >= matched.minOrderAmount) {
         couponDiscount = Math.min(Math.round((itemTotal * matched.discountPercentage) / 100), matched.maxDiscount);
       }
     }
@@ -275,7 +304,7 @@ apiRouter.post("/orders", async (req, res) => {
         lat: 12.9716,
         lng: 77.6412,
       },
-      items,
+      items: pricedItems,
       itemTotal,
       packagingFee,
       deliveryFee,
@@ -285,9 +314,14 @@ apiRouter.post("/orders", async (req, res) => {
       totalAmount,
       paymentMethod: paymentMethod || "upi",
       paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
+      etaMinutes: typeof etaMinutes === "number" ? etaMinutes : undefined,
+      notes: notes || undefined,
     };
 
     const newOrder = await createOrder(orderPayload);
+    if (couponCode && couponDiscount > 0) {
+      await incrementCouponUsage(String(couponCode).toUpperCase());
+    }
     res.status(201).json(newOrder);
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to create order" });
@@ -296,9 +330,16 @@ apiRouter.post("/orders", async (req, res) => {
 
 apiRouter.patch("/orders/:id/status", async (req, res) => {
   try {
-    const { status, note } = req.body;
+    const { status, note, otp } = req.body;
     if (!status) {
       return res.status(400).json({ error: "Missing 'status' in request body" });
+    }
+    if (status === "delivered") {
+      const existing = await getOrderById(req.params.id);
+      if (!existing) return res.status(404).json({ error: "Order not found" });
+      if (!otp || String(otp) !== String(existing.otp)) {
+        return res.status(400).json({ error: "Valid delivery OTP is required" });
+      }
     }
     const updated = await updateOrderStatus(req.params.id, status, note);
     if (!updated) {
@@ -361,7 +402,8 @@ apiRouter.get("/riders", async (req, res) => {
 apiRouter.post("/riders/register", async (req, res) => {
   const created = await registerRider(req.body);
   if (!created) return res.status(400).json({ error: "Name, phone, vehicle, and a 4-digit PIN are required" });
-  res.status(201).json(created);
+  const { pin, ...safeCreated } = created;
+  res.status(201).json(safeCreated);
 });
 
 apiRouter.patch("/riders/:id/approve", async (req, res) => {

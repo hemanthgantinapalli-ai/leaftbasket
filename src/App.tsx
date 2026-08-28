@@ -241,7 +241,7 @@ export default function App() {
       soundType = "status_update";
     } else if (newStatus === "out_for_delivery") {
       title = "Out for Delivery! 🛵";
-      const riderName = order.riderDetails?.name || "Rider Rajesh K.";
+      const riderName = order.riderDetails?.name || "your delivery rider";
       const eta = order.etaMinutes || 4;
       message = customNote || `${riderName} picked up your order on Ather EV and is en route (ETA: ~${eta} mins).`;
       soundType = "out_for_delivery";
@@ -380,6 +380,7 @@ export default function App() {
     try {
       sessionStorage.setItem("leafbasket_admin_email", saved.email);
       sessionStorage.setItem("leafbasket_admin_role", saved.role);
+      sessionStorage.setItem("leafbasket_admin_hub", profile.hub);
     } catch {}
   };
 
@@ -455,7 +456,27 @@ export default function App() {
       if (cps.status === "fulfilled") setCoupons(cps.value);
       if (rds.status === "fulfilled") setRiders(rds.value);
       if (db.status === "fulfilled") setDbStatus(db.value);
-      if (usrs.status === "fulfilled") setUsers(usrs.value);
+      if (usrs.status === "fulfilled") {
+        const knownUsers = usrs.value;
+        const knownPhones = new Set(knownUsers.map((user) => user.phone.replace(/\s+/g, "")));
+        const orderUsers = ords.status === "fulfilled"
+          ? ords.value
+            .filter((order) => order.customerPhone && !knownPhones.has(order.customerPhone.replace(/\s+/g, "")))
+            .map((order) => ({
+              id: `usr-${order.customerPhone.replace(/\D/g, "")}`,
+              name: order.customerName,
+              phone: order.customerPhone,
+              ordersCount: 1,
+            }))
+          : [];
+        const usersByPhone = new Map<string, UserProfile>();
+        [...knownUsers, ...orderUsers].forEach((user) => {
+          const phone = user.phone.replace(/\s+/g, "");
+          const existing = usersByPhone.get(phone);
+          usersByPhone.set(phone, existing ? { ...existing, ordersCount: (existing.ordersCount || 0) + (user.ordersCount || 0) } : user);
+        });
+        setUsers([...usersByPhone.values()]);
+      }
     } catch (err) {
       console.error("Initial load error:", err);
     }
@@ -465,6 +486,21 @@ export default function App() {
     loadInitialData();
   }, []);
 
+  useEffect(() => {
+    if (!currentUser?.phone) return;
+    fetchOrders(currentUser.phone)
+      .then((customerOrders) => {
+        setOrders(customerOrders);
+        customerOrders.forEach((order) => {
+          previousOrderStatusesRef.current[order.orderId] = order.orderStatus;
+        });
+        if (customerOrders.length > 0 && !activeTrackingOrderId) {
+          setActiveTrackingOrderId(customerOrders[0].orderId);
+        }
+      })
+      .catch((error) => console.error("Customer order load error:", error));
+  }, [currentUser?.phone]);
+
   // Background polling for order status changes
   useEffect(() => {
     const hasActiveOrders = orders.some((o) => o.orderStatus !== "delivered" && o.orderStatus !== "cancelled");
@@ -472,7 +508,7 @@ export default function App() {
 
     const interval = setInterval(async () => {
       try {
-        const freshOrders = await fetchOrders();
+        const freshOrders = await fetchOrders(currentUser?.phone);
         freshOrders.forEach((fresh) => {
           const prevStatus = previousOrderStatusesRef.current[fresh.orderId];
           if (!prevStatus) {
@@ -625,8 +661,8 @@ export default function App() {
   };
 
   // Order Status Updates
-  const handleUpdateOrderStatus = async (orderId: string, status: string, note?: string) => {
-    const updated = await updateOrderStatus(orderId, status, note);
+  const handleUpdateOrderStatus = async (orderId: string, status: string, note?: string, otp?: string) => {
+    const updated = await updateOrderStatus(orderId, status, note, otp);
     previousOrderStatusesRef.current[orderId] = status;
     setOrders((prev) => prev.map((o) => (o.orderId === orderId ? updated : o)));
 
@@ -781,7 +817,7 @@ export default function App() {
         onSearchChange={setSearchQuery}
         products={products}
         onSelectProduct={(p) => setSelectedProductDetail(p)}
-        activeOrderCount={orders.filter((o) => o.orderStatus !== "delivered").length}
+        activeOrderCount={orders.filter((o) => o.orderStatus !== "delivered" && o.orderStatus !== "cancelled").length}
         notifications={notifications}
         onMarkAllNotificationsRead={handleMarkAllNotificationsRead}
         onClearNotifications={handleClearNotifications}
@@ -1268,7 +1304,7 @@ export default function App() {
           setIsAuthModalOpen(true);
         }}
         currentUser={currentUser}
-        activeOrderCount={orders.filter((o) => o.orderStatus !== "delivered").length}
+        activeOrderCount={orders.filter((o) => o.orderStatus !== "delivered" && o.orderStatus !== "cancelled").length}
         onScrollToCategories={() => {
           if (currentTab !== "shop") {
             setCurrentTab("shop");

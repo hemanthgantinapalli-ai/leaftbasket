@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 export interface IOrderItem {
   productId: string;
+  itemId?: string;
   name: string;
   price: number;
   quantity: number;
@@ -19,6 +20,7 @@ export interface IOrder {
     landmark?: string;
     area: string;
     city: string;
+    state?: string;
     pincode: string;
     lat?: number;
     lng?: number;
@@ -65,6 +67,7 @@ const OrderSchema = new Schema<IOrder>(
       landmark: { type: String },
       area: { type: String, default: "Indiranagar" },
       city: { type: String, default: "Bengaluru" },
+      state: { type: String, default: "Karnataka" },
       pincode: { type: String, default: "560038" },
       lat: { type: Number, default: 12.9716 },
       lng: { type: Number, default: 77.5946 },
@@ -72,6 +75,7 @@ const OrderSchema = new Schema<IOrder>(
     items: [
       {
         productId: { type: String, required: true },
+        itemId: { type: String },
         name: { type: String, required: true },
         price: { type: Number, required: true },
         quantity: { type: Number, required: true },

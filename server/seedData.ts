@@ -543,62 +543,7 @@ export const INITIAL_COUPONS = [
   },
 ];
 
-export const INITIAL_RIDERS = [
-  {
-    riderId: "rider-rajesh-01",
-    name: "Rajesh K.",
-    phone: "+91 98452 38471",
-    vehicleType: "Electric Ather 450X",
-    vehicleNumber: "KA 01 EJ 7892",
-    rating: 4.95,
-    completedDeliveries: 1480,
-    currentStatus: "en_route",
-    currentLocation: {
-      lat: 12.9724,
-      lng: 77.6385,
-      heading: 110,
-      speedKmH: 26,
-      lastUpdated: new Date(),
-    },
-    batteryPercentage: 88,
-  },
-  {
-    riderId: "rider-anand-02",
-    name: "Anand M.",
-    phone: "+91 97401 84920",
-    vehicleType: "Ola S1 Pro",
-    vehicleNumber: "KA 05 MN 2210",
-    rating: 4.88,
-    completedDeliveries: 940,
-    currentStatus: "idle",
-    currentLocation: {
-      lat: 12.9782,
-      lng: 77.6408,
-      heading: 45,
-      speedKmH: 0,
-      lastUpdated: new Date(),
-    },
-    batteryPercentage: 94,
-  },
-  {
-    riderId: "rider-kiran-03",
-    name: "Kiran Dev",
-    phone: "+91 99008 17263",
-    vehicleType: "TVS iQube",
-    vehicleNumber: "KA 03 HL 9012",
-    rating: 4.92,
-    completedDeliveries: 1120,
-    currentStatus: "idle",
-    currentLocation: {
-      lat: 12.9698,
-      lng: 77.6331,
-      heading: 270,
-      speedKmH: 0,
-      lastUpdated: new Date(),
-    },
-    batteryPercentage: 76,
-  },
-];
+export const INITIAL_RIDERS = [];
 
 export const INITIAL_SAMPLE_ORDERS = [
   {

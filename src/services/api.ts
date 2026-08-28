@@ -204,11 +204,11 @@ export async function placeOrder(orderData: any): Promise<Order> {
   return res.json();
 }
 
-export async function updateOrderStatus(orderId: string, status: string, note?: string): Promise<Order> {
+export async function updateOrderStatus(orderId: string, status: string, note?: string, otp?: string): Promise<Order> {
   const res = await fetch(`${BASE_URL}/orders/${orderId}/status`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status, note }),
+    body: JSON.stringify({ status, note, otp }),
   });
   if (!res.ok) throw new Error("Failed to update order status");
   return res.json();

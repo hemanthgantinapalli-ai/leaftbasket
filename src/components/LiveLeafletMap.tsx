@@ -144,7 +144,7 @@ export const LiveLeafletMap: React.FC<LiveLeafletMapProps> = ({
         .addTo(map)
         .bindPopup(
           `<div style="font-family: system-ui; padding: 4px;">
-            <strong style="color: #d97706; font-size: 13px;">🛵 ${riderLocation.name || "Rajesh (Ather EV)"}</strong>
+            <strong style="color: #d97706; font-size: 13px;">🛵 ${riderLocation.name || "Awaiting rider assignment"}</strong>
             <p style="margin: 3px 0 0; color: #4b5563; font-size: 11px;">Status: Out for Delivery · Speed: 28 km/h</p>
           </div>`
         );

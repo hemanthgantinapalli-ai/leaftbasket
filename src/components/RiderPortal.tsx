@@ -33,7 +33,7 @@ import { motion, AnimatePresence } from "motion/react";
 interface RiderPortalProps {
   orders: Order[];
   riders: Rider[];
-  onUpdateStatus: (orderId: string, status: string, note?: string) => Promise<void>;
+  onUpdateStatus: (orderId: string, status: string, note?: string, otp?: string) => Promise<void>;
   onUpdateLocation: (orderId: string, lat: number, lng: number, etaMinutes?: number) => Promise<void>;
   onSaveRiderProfile: (rider: Rider) => Promise<void>;
   onRegisterRider: (profile: { name: string; phone: string; vehicleNumber: string; hub: string; pin: string }) => Promise<Rider>;
@@ -522,12 +522,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
 
   const handleVerifyOTP = async () => {
     if (!activeOrder) return;
-    if (
-      otpInput.trim() !== activeOrder.otp &&
-      otpInput.trim() !== "4829" &&
-      otpInput.trim() !== "8492" &&
-      otpInput.trim() !== "1234"
-    ) {
+    if (otpInput.trim() !== activeOrder.otp) {
       setOtpError("Incorrect customer PIN. Please ask customer to read the 4-digit OTP shown in their app.");
       return;
     }
@@ -536,7 +531,8 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
     await onUpdateStatus(
       activeOrder.orderId,
       "delivered",
-      `Delivered on doorstep by ${currentRider.name} (Customer PIN verified)`
+      `Delivered on doorstep by ${currentRider.name} (Customer PIN verified)`,
+      otpInput.trim()
     );
     setOtpInput("");
   };

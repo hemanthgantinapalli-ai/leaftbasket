@@ -43,7 +43,7 @@ import { LeafBasketLogo } from "./LeafBasketLogo";
 import { motion, AnimatePresence } from "motion/react";
 
 const PRIVATE_ADMIN_EMAIL = "admin@123.com";
-const PRIVATE_ADMIN_PASSWORD = "admin9090";
+const PRIVATE_ADMIN_PASSWORD = "admin123";
 
 interface AdminHubProps {
   products: Product[];
@@ -95,7 +95,13 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [adminName, setAdminName] = useState("Leafbasket Administrator");
   const [adminEmail, setAdminEmail] = useState(PRIVATE_ADMIN_EMAIL);
-  const [adminHubLocation, setAdminHubLocation] = useState("Dark Store #04 - Indiranagar, Bengaluru");
+  const [adminHubLocation, setAdminHubLocation] = useState(() => {
+    try {
+      return sessionStorage.getItem("leafbasket_admin_hub") || "Dark Store #04 - Indiranagar, Bengaluru";
+    } catch {
+      return "Dark Store #04 - Indiranagar, Bengaluru";
+    }
+  });
   const [adminRoleSelection, setAdminRoleSelection] = useState("Store Operations Director");
   const [adminPassword, setAdminPassword] = useState("");
   const [employeeAuthKey, setEmployeeAuthKey] = useState("LEAF-ADMIN-2026");
