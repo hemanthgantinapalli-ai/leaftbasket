@@ -22,6 +22,8 @@ import {
   registerRider,
   approveRider,
   updateRiderAvailability,
+  setRiderBlocked,
+  deleteRider,
   isMongoActive,
   seedMongoIfEmpty,
 } from "../store.js";
@@ -353,6 +355,18 @@ apiRouter.patch("/riders/:id/availability", async (req, res) => {
   const updated = await updateRiderAvailability(req.params.id, req.body.online === true);
   if (!updated) return res.status(404).json({ error: "Approved rider not found" });
   res.json(updated);
+});
+
+apiRouter.patch("/riders/:id/block", async (req, res) => {
+  const updated = await setRiderBlocked(req.params.id, req.body.blocked === true);
+  if (!updated) return res.status(404).json({ error: "Rider not found" });
+  res.json(updated);
+});
+
+apiRouter.delete("/riders/:id", async (req, res) => {
+  const deleted = await deleteRider(req.params.id);
+  if (!deleted) return res.status(404).json({ error: "Rider not found" });
+  res.json({ success: true });
 });
 
 // AI Smart Grocery & Recipe Assistant

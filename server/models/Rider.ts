@@ -9,6 +9,7 @@ export interface IRider {
   vehicleNumber: string;
   hub?: string;
   isApproved?: boolean;
+  isBlocked?: boolean;
   rating: number;
   completedDeliveries: number;
   currentStatus: string;
@@ -33,6 +34,7 @@ const RiderSchema = new Schema<IRider>(
     vehicleNumber: { type: String, default: "KA 01 EK 4920" },
     hub: { type: String, default: "Dark Store #04 - Indiranagar, Bengaluru" },
     isApproved: { type: Boolean, default: true },
+    isBlocked: { type: Boolean, default: false },
     rating: { type: Number, default: 4.9 },
     completedDeliveries: { type: Number, default: 840 },
     currentStatus: { type: String, default: "idle" },

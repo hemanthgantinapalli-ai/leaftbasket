@@ -123,7 +123,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
       const storedRiders = JSON.parse(localStorage.getItem("leafbasket_registered_riders") || "[]");
       localStorage.setItem("leafbasket_registered_riders", JSON.stringify(storedRiders.map((stored: any) => {
         const serverRider = riders.find((rider) => rider.riderId === stored.id || rider.phone.replace(/\s+/g, "") === stored.phone.replace(/\s+/g, ""));
-        return serverRider ? { ...stored, approved: serverRider.isApproved !== false } : stored;
+        return serverRider ? { ...stored, approved: serverRider.isApproved !== false, blocked: serverRider.isBlocked === true } : stored;
       })));
     } catch {}
   }, [riders]);
@@ -167,6 +167,10 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
           setRiderAuthError("Your registration is waiting for admin approval.");
           return;
         }
+        if (found.blocked === true) {
+          setRiderAuthError("This rider profile is blocked by the administrator.");
+          return;
+        }
         isMatch = true;
         setCurrentRider({
           riderId: found.id,
@@ -193,6 +197,10 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
         const seededRider = riders.find(
           (rider) => rider.phone.replace(/\s+/g, "") === riderPhoneInput.replace(/\s+/g, "")
         );
+        if (seededRider?.isBlocked) {
+          setRiderAuthError("This rider profile is blocked by the administrator.");
+          return;
+        }
         if (seededRider && riderPasscode.trim() === "1234") {
           isMatch = true;
           setCurrentRider(seededRider);

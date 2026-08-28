@@ -165,6 +165,38 @@ export async function updateRiderAvailability(riderId: string, online: boolean) 
   return memRiders[idx];
 }
 
+export async function setRiderBlocked(riderId: string, blocked: boolean) {
+  if (isMongoActive()) {
+    try {
+      const updated = await (RiderModel as any).findOneAndUpdate(
+        { riderId },
+        { $set: { isBlocked: blocked, currentStatus: blocked ? "offline" : "idle" } },
+        { new: true }
+      ).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB setRiderBlocked error:", e);
+    }
+  }
+  const idx = memRiders.findIndex((rider) => rider.riderId === riderId);
+  if (idx === -1) return null;
+  memRiders[idx] = { ...memRiders[idx], isBlocked: blocked, currentStatus: blocked ? "offline" : "idle" };
+  return memRiders[idx];
+}
+
+export async function deleteRider(riderId: string) {
+  if (isMongoActive()) {
+    try {
+      await (RiderModel as any).deleteOne({ riderId }).exec();
+    } catch (e) {
+      console.warn("MongoDB deleteRider error:", e);
+    }
+  }
+  const exists = memRiders.some((rider) => rider.riderId === riderId);
+  memRiders = memRiders.filter((rider) => rider.riderId !== riderId);
+  return exists;
+}
+
 export async function seedMongoIfEmpty() {
   if (!isMongoActive()) return;
 
@@ -476,7 +508,7 @@ export async function assignOrderRider(orderId: string, riderId: string) {
       console.warn("MongoDB find rider for assignment error:", e);
     }
   }
-  if (!rider || rider.isApproved === false || rider.currentStatus === "offline") return null;
+  if (!rider || rider.isApproved === false || rider.isBlocked || rider.currentStatus === "offline") return null;
 
   const riderDetails = {
     riderId: rider.riderId,

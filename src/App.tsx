@@ -27,6 +27,8 @@ import {
   registerRider,
   approveRider,
   updateRiderAvailability,
+  setRiderBlocked,
+  deleteRider,
   updateOrderLocation,
   createProduct,
   updateProduct,
@@ -378,6 +380,16 @@ export default function App() {
   const handleSetRiderAvailability = async (riderId: string, online: boolean) => {
     const updated = await updateRiderAvailability(riderId, online);
     setRiders((prev) => prev.map((rider) => rider.riderId === riderId ? updated : rider));
+  };
+
+  const handleSetRiderBlocked = async (riderId: string, blocked: boolean) => {
+    const updated = await setRiderBlocked(riderId, blocked);
+    setRiders((prev) => prev.map((rider) => rider.riderId === riderId ? updated : rider));
+  };
+
+  const handleDeleteRider = async (riderId: string) => {
+    await deleteRider(riderId);
+    setRiders((prev) => prev.filter((rider) => rider.riderId !== riderId));
   };
 
   // Save cart changes
@@ -927,6 +939,8 @@ export default function App() {
             onAssignOrderRider={handleAssignOrderRider}
             onSaveAdminProfile={handleSaveAdminProfile}
             onApproveRider={handleApproveRider}
+            onSetRiderBlocked={handleSetRiderBlocked}
+            onDeleteRider={handleDeleteRider}
           />
         )}
       </main>

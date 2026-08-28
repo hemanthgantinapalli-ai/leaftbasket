@@ -56,6 +56,8 @@ interface AdminHubProps {
   onAssignOrderRider: (orderId: string, riderId: string) => Promise<void>;
   onSaveAdminProfile: (profile: { name: string; email: string; hub: string; role: string }) => Promise<void>;
   onApproveRider: (riderId: string) => Promise<void>;
+  onSetRiderBlocked: (riderId: string, blocked: boolean) => Promise<void>;
+  onDeleteRider: (riderId: string) => Promise<void>;
 }
 
 export const AdminHub: React.FC<AdminHubProps> = ({
@@ -70,6 +72,8 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   onAssignOrderRider,
   onSaveAdminProfile,
   onApproveRider,
+  onSetRiderBlocked,
+  onDeleteRider,
 }) => {
   // Session Authentication state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -862,13 +866,18 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     <div key={rider.riderId} className="flex items-center justify-between gap-2 border-t border-stone-100 pt-2">
                       <div className="min-w-0">
                         <div className="font-semibold text-stone-800 truncate">{rider.name}</div>
-                        <div className="text-[10px] text-stone-500">{rider.phone} · {rider.currentStatus === "offline" ? "Offline" : "Online"}</div>
+                        <div className="text-[10px] text-stone-500">{rider.phone} · {rider.isBlocked ? "Blocked" : rider.currentStatus === "offline" ? "Offline" : "Online"}</div>
                       </div>
-                      {rider.isApproved === false ? (
-                        <button type="button" onClick={() => onApproveRider(rider.riderId)} className="shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 text-stone-950 font-black text-[10px] cursor-pointer">Approve</button>
-                      ) : (
-                        <span className="shrink-0 text-[10px] font-bold text-emerald-700">Approved</span>
-                      )}
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {rider.isApproved === false ? (
+                          <button type="button" onClick={() => onApproveRider(rider.riderId)} className="px-2.5 py-1.5 rounded-lg bg-amber-500 text-stone-950 font-black text-[10px] cursor-pointer">Approve</button>
+                        ) : (
+                          <button type="button" onClick={() => onSetRiderBlocked(rider.riderId, !rider.isBlocked)} className={`px-2.5 py-1.5 rounded-lg font-black text-[10px] cursor-pointer ${rider.isBlocked ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+                            {rider.isBlocked ? "Unblock" : "Block"}
+                          </button>
+                        )}
+                        <button type="button" onClick={() => { if (confirm(`Delete rider profile for ${rider.name}?`)) onDeleteRider(rider.riderId); }} className="px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-700 hover:bg-rose-100 hover:text-rose-800 font-black text-[10px] cursor-pointer">Delete</button>
+                      </div>
                     </div>
                   ))}
                 </div>

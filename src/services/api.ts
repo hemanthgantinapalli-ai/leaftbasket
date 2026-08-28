@@ -58,6 +58,17 @@ export async function updateRiderAvailability(riderId: string, online: boolean):
   return res.json();
 }
 
+export async function setRiderBlocked(riderId: string, blocked: boolean): Promise<Rider> {
+  const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}/block`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ blocked }) });
+  if (!res.ok) throw new Error("Failed to update rider access");
+  return res.json();
+}
+
+export async function deleteRider(riderId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete rider");
+}
+
 export async function configureMongoURI(uri: string): Promise<{ success: boolean; message: string; status: DatabaseStatus }> {
   const res = await fetch(`${BASE_URL}/config/mongo-uri`, {
     method: "POST",
