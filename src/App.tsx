@@ -22,6 +22,9 @@ import {
   updateOrderStatus,
   assignOrderRider,
   updateUserProfile,
+  fetchUsers,
+  setUserBlocked,
+  deleteUser,
   updateAdminProfile,
   updateRiderProfile,
   registerRider,
@@ -177,6 +180,7 @@ export default function App() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [riders, setRiders] = useState<Rider[]>([]);
   const [dbStatus, setDbStatus] = useState<DatabaseStatus | null>(null);
+  const [users, setUsers] = useState<UserProfile[]>([]);
 
   // Filters & Search
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -314,6 +318,16 @@ export default function App() {
   // Save user changes
   const handleUserLogin = (user: UserProfile) => {
     setCurrentUser(user);
+    setUsers((prev) => {
+      const exists = prev.some((item) => item.id === user.id);
+      return exists ? prev.map((item) => item.id === user.id ? { ...item, ...user } : item) : [user, ...prev];
+    });
+    void updateUserProfile(user.id, {
+      name: user.name,
+      phone: user.phone,
+      email: user.email,
+      savedAddresses: user.savedAddresses,
+    });
     try {
       localStorage.setItem("leafbasket_user", JSON.stringify(user));
     } catch (e) {
@@ -339,6 +353,7 @@ export default function App() {
       previousPhone: currentUser?.phone,
     });
     handleUserLogin({ ...user, ...saved });
+    setUsers((prev) => prev.map((item) => item.id === user.id ? { ...item, ...saved } : item));
     if (currentUser?.phone) {
       setOrders((prev) => prev.map((order) =>
         order.customerPhone === currentUser.phone
@@ -346,6 +361,18 @@ export default function App() {
           : order
       ));
     }
+  };
+
+  const handleSetUserBlocked = async (userId: string, blocked: boolean) => {
+    const updated = await setUserBlocked(userId, blocked);
+    setUsers((prev) => prev.map((user) => user.id === userId ? updated : user));
+    if (currentUser?.id === userId) handleUserLogin({ ...currentUser, ...updated });
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    await deleteUser(userId);
+    setUsers((prev) => prev.filter((user) => user.id !== userId));
+    if (currentUser?.id === userId) handleUserLogout();
   };
 
   const handleSaveAdminProfile = async (profile: { name: string; email: string; hub: string; role: string }) => {
@@ -404,13 +431,14 @@ export default function App() {
   // Initial Data Load
   const loadInitialData = async () => {
     try {
-      const [prods, cats, ords, cps, rds, db] = await Promise.allSettled([
+      const [prods, cats, ords, cps, rds, db, usrs] = await Promise.allSettled([
         fetchProducts(),
         fetchCategories(),
         fetchOrders(),
         fetchCoupons(),
         fetchRiders(),
         fetchDBStatus(),
+        fetchUsers(),
       ]);
 
       if (prods.status === "fulfilled") setProducts(prods.value);
@@ -427,6 +455,7 @@ export default function App() {
       if (cps.status === "fulfilled") setCoupons(cps.value);
       if (rds.status === "fulfilled") setRiders(rds.value);
       if (db.status === "fulfilled") setDbStatus(db.value);
+      if (usrs.status === "fulfilled") setUsers(usrs.value);
     } catch (err) {
       console.error("Initial load error:", err);
     }
@@ -941,6 +970,9 @@ export default function App() {
             onApproveRider={handleApproveRider}
             onSetRiderBlocked={handleSetRiderBlocked}
             onDeleteRider={handleDeleteRider}
+            users={users}
+            onSetUserBlocked={handleSetUserBlocked}
+            onDeleteUser={handleDeleteUser}
           />
         )}
       </main>

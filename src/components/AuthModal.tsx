@@ -61,7 +61,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setTimeout(() => {
       setLoading(false);
       const userProfile: UserProfile = {
-        id: `usr-${Date.now()}`,
+        id: `usr-${phone}`,
         name: name.trim() || (mode === "register" ? "New Shopper" : "Priya Sharma"),
         phone: `+91 ${phone.replace(/^\+91/, "").trim()}`,
         email: email.trim() || "shopper@leafbasket.in",

@@ -36,6 +36,7 @@ export interface UserProfile {
   email?: string;
   savedAddresses?: string[];
   ordersCount?: number;
+  isBlocked?: boolean;
 }
 
 interface UserProfileModalProps {
@@ -241,7 +242,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       return;
     }
     const user: UserProfile = {
-      id: `usr-${Date.now()}`,
+      id: `usr-${loginPhone}`,
       name: loginName.trim() || "Priya Sharma",
       phone: `+91 ${loginPhone.replace(/^\+91/, "").trim()}`,
       email: "priya.sharma@example.com",

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Product, Order, Category, Rider } from "../types";
+import { UserProfile } from "./UserProfileModal";
 import {
   PackagePlus,
   TrendingUp,
@@ -58,6 +59,9 @@ interface AdminHubProps {
   onApproveRider: (riderId: string) => Promise<void>;
   onSetRiderBlocked: (riderId: string, blocked: boolean) => Promise<void>;
   onDeleteRider: (riderId: string) => Promise<void>;
+  users: UserProfile[];
+  onSetUserBlocked: (userId: string, blocked: boolean) => Promise<void>;
+  onDeleteUser: (userId: string) => Promise<void>;
 }
 
 export const AdminHub: React.FC<AdminHubProps> = ({
@@ -74,6 +78,9 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   onApproveRider,
   onSetRiderBlocked,
   onDeleteRider,
+  users,
+  onSetUserBlocked,
+  onDeleteUser,
 }) => {
   // Session Authentication state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -104,7 +111,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   });
 
   // Dashboard Navigation & Filters
-  const [activeTab, setActiveTab] = useState<"overview" | "orders" | "catalog" | "analytics">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "orders" | "catalog" | "analytics" | "profile" | "users">("overview");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
@@ -152,6 +159,11 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   const activeOrdersCount = orders.filter((o) => o.orderStatus !== "delivered" && o.orderStatus !== "cancelled").length;
   const deliveredOrdersCount = orders.filter((o) => o.orderStatus === "delivered").length;
   const outOfStockCount = products.filter((p) => !p.inStock || (p.stockCount !== undefined && p.stockCount <= 0)).length;
+  const onlineRidersCount = riders.filter((rider) => rider.isApproved !== false && !rider.isBlocked && rider.currentStatus !== "offline").length;
+  const pendingRidersCount = riders.filter((rider) => rider.isApproved === false).length;
+  const blockedRidersCount = riders.filter((rider) => rider.isBlocked).length;
+  const unassignedOrdersCount = orders.filter((order) => !order.riderDetails && order.orderStatus !== "delivered" && order.orderStatus !== "cancelled").length;
+  const pendingOrdersCount = orders.filter((order) => order.orderStatus === "placed").length;
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -288,13 +300,13 @@ export const AdminHub: React.FC<AdminHubProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-bold text-emerald-400 mb-2">
                 <Lock className="w-3 h-3" />
-                <span>Enterprise SOC-2 / 256-Bit TLS Gate</span>
+                <span>Private Owner Access · 256-Bit TLS</span>
               </div>
               <h2 className="text-2xl font-black font-['Outfit'] text-white tracking-tight">
                 Dark Store Operations Console
               </h2>
               <p className="text-xs text-stone-400 mt-1.5 max-w-sm mx-auto leading-relaxed">
-                Leaf Basket Indiranagar Hub #04 · Authorized executive access for Dark Store Managers, Dispatch Leads & Catalog Curators.
+                Bengaluru operations console for orders, inventory, rider access, and delivery control.
               </p>
             </div>
 
@@ -386,7 +398,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     required
                     value={adminPassword}
                     onChange={(e) => setAdminPassword(e.target.value)}
-                    placeholder="Enter 4-digit Master PIN"
+                    placeholder="Enter private owner password"
                     className="w-full px-4 py-3 bg-stone-800/90 border border-stone-700 rounded-xl text-white font-mono tracking-widest focus:outline-emerald-500 focus:border-emerald-500 text-xs transition"
                   />
                   <button
@@ -403,7 +415,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
               <div className="p-3.5 rounded-2xl bg-stone-800/60 border border-stone-700/60 text-[11px] text-stone-400 flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-stone-200">Role-Based Granular Access:</span> Orders, inventory restock, SLA speedometers, customer delivery OTP overrides and catalog price updates.
+                  <span className="font-bold text-stone-200">Owner-only controls:</span> order dispatch, inventory, rider approvals, delivery overrides, and profile permissions.
                 </div>
               </div>
 
@@ -580,6 +592,34 @@ export const AdminHub: React.FC<AdminHubProps> = ({
         </div>
       </div>
 
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-xs">
+          <div className="text-[10px] font-black uppercase tracking-wider text-stone-400">Orders Waiting</div>
+          <div className="text-xl font-black text-amber-700 mt-1">{pendingOrdersCount}</div>
+          <div className="text-[10px] text-stone-500">Newly placed</div>
+        </div>
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-xs">
+          <div className="text-[10px] font-black uppercase tracking-wider text-stone-400">Needs Rider</div>
+          <div className="text-xl font-black text-rose-700 mt-1">{unassignedOrdersCount}</div>
+          <div className="text-[10px] text-stone-500">Unassigned drops</div>
+        </div>
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-xs">
+          <div className="text-[10px] font-black uppercase tracking-wider text-stone-400">Drivers Online</div>
+          <div className="text-xl font-black text-emerald-700 mt-1">{onlineRidersCount}</div>
+          <div className="text-[10px] text-stone-500">Ready for dispatch</div>
+        </div>
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-xs">
+          <div className="text-[10px] font-black uppercase tracking-wider text-stone-400">Approval Queue</div>
+          <div className="text-xl font-black text-blue-700 mt-1">{pendingRidersCount}</div>
+          <div className="text-[10px] text-stone-500">Rider applications</div>
+        </div>
+        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 shadow-xs">
+          <div className="text-[10px] font-black uppercase tracking-wider text-stone-400">Access Holds</div>
+          <div className="text-xl font-black text-stone-700 mt-1">{blockedRidersCount}</div>
+          <div className="text-[10px] text-stone-500">Blocked profiles</div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
@@ -746,6 +786,30 @@ export const AdminHub: React.FC<AdminHubProps> = ({
             <BarChart3 className="w-3.5 h-3.5" />
             <span>SLA Performance</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("profile")}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "profile"
+                ? "bg-emerald-800 text-white shadow-xs"
+                : "text-stone-600 hover:bg-stone-100"
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Admin Profile</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("users")}
+            className={`px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
+              activeTab === "users" ? "bg-emerald-800 text-white shadow-xs" : "text-stone-600 hover:bg-stone-100"
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>All Users ({users.length})</span>
+          </button>
         </div>
 
         {/* Global Dark Store Status Indicator */}
@@ -813,6 +877,9 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                         <div className="text-[11px] text-stone-500">
                           {o.items.length} items ({o.items.map((i) => i.name).slice(0, 2).join(", ")}...) · ₹{o.totalAmount}
                         </div>
+                        {!o.riderDetails && o.orderStatus !== "delivered" && o.orderStatus !== "cancelled" && (
+                          <div className="text-[10px] font-black text-rose-700 uppercase tracking-wider mt-1">Action required: assign a rider</div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -822,6 +889,8 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                           className="bg-white border border-stone-300 rounded-xl px-3 py-1.5 text-xs font-bold text-stone-800 focus:outline-emerald-600 cursor-pointer shadow-2xs"
                         >
                           <option value="placed">Placed (Received)</option>
+                          <option value="assigned">Assigned to Rider</option>
+                          <option value="accepted">Rider Accepted</option>
                           <option value="packed">Packed in Pod</option>
                           <option value="out_for_delivery">Out for Delivery</option>
                           <option value="delivered">Delivered</option>
@@ -857,7 +926,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     <div className="font-bold text-stone-800">Riders on Standby</div>
                     <div className="text-[11px] text-stone-500">Ather EV Fleet ready at Hub</div>
                   </div>
-                  <span className="text-xs font-black text-stone-900">{riders.filter((rider) => rider.isApproved !== false && rider.currentStatus !== "offline").length} Online</span>
+                  <span className="text-xs font-black text-stone-900">{onlineRidersCount} Online</span>
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-white border border-stone-200 space-y-2">
@@ -1023,7 +1092,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                           className="bg-stone-50 border border-stone-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-stone-800 focus:outline-emerald-600 cursor-pointer shadow-2xs"
                         >
                           <option value="">Assign rider...</option>
-                          {riders.map((rider) => (
+                          {riders.filter((rider) => rider.isApproved !== false && !rider.isBlocked && rider.currentStatus !== "offline").map((rider) => (
                             <option key={rider.riderId} value={rider.riderId}>
                               {rider.name} · {rider.currentStatus}
                             </option>
@@ -1267,6 +1336,80 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "profile" && (
+        <div className="max-w-3xl space-y-4">
+          <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-6">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-4">
+              <div>
+                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">Administrator Profile</h3>
+                <p className="text-xs text-stone-500 mt-1">Manage the private owner account, hub location, and dashboard permissions.</p>
+              </div>
+              <ShieldCheck className="w-6 h-6 text-emerald-700" />
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200">
+              <div>
+                <div className="text-xs font-black text-emerald-950">{adminName || "Leafbasket Administrator"}</div>
+                <div className="text-[11px] text-emerald-800 mt-0.5">{adminEmail} · {adminHubLocation}</div>
+              </div>
+              <button type="button" onClick={() => setIsEditingAdminProfile(true)} className="px-3 py-2 rounded-xl bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+                <Edit3 className="w-3.5 h-3.5" /> Edit Profile
+              </button>
+            </div>
+
+            {isEditingAdminProfile && (
+              <form onSubmit={handleSaveAdminProfile} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+                <label className="text-xs font-bold text-stone-700">Full name<input value={adminName} onChange={(e) => setAdminName(e.target.value)} required className="mt-1 w-full p-2.5 border border-stone-300 rounded-xl font-normal" /></label>
+                <label className="text-xs font-bold text-stone-700">Email<input type="email" value={adminEmail} onChange={(e) => setAdminEmail(e.target.value)} required className="mt-1 w-full p-2.5 border border-stone-300 rounded-xl font-normal" /></label>
+                <label className="text-xs font-bold text-stone-700">Bengaluru hub location<input value={adminHubLocation} onChange={(e) => setAdminHubLocation(e.target.value)} required className="mt-1 w-full p-2.5 border border-stone-300 rounded-xl font-normal" /></label>
+                <label className="text-xs font-bold text-stone-700">Role permissions<select value={activeAdminRole} onChange={(e) => setActiveAdminRole(e.target.value)} className="mt-1 w-full p-2.5 border border-stone-300 rounded-xl font-normal"><option>Store Operations Director</option><option>Dispatch Lead</option><option>Catalog Curator</option></select></label>
+                <div className="sm:col-span-2 flex gap-2">
+                  <button type="submit" disabled={isSavingAdminProfile} className="px-4 py-2.5 rounded-xl bg-emerald-700 text-white text-xs font-bold disabled:opacity-60 cursor-pointer">{isSavingAdminProfile ? "Saving..." : "Save Profile"}</button>
+                  <button type="button" onClick={() => setIsEditingAdminProfile(false)} className="px-4 py-2.5 rounded-xl border border-stone-300 text-stone-700 text-xs font-bold cursor-pointer">Cancel</button>
+                </div>
+                {adminProfileError && <div className="sm:col-span-2 text-xs text-rose-700 font-semibold">{adminProfileError}</div>}
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === "users" && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-3xl border border-stone-200 shadow-xs p-6">
+            <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-4">
+              <div>
+                <h3 className="text-lg font-black font-['Outfit'] text-stone-900">Customer Accounts</h3>
+                <p className="text-xs text-stone-500 mt-1">Review registered users and manage account access.</p>
+              </div>
+              <span className="text-xs font-black text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl">{users.length} total</span>
+            </div>
+            {users.length === 0 ? (
+              <div className="py-12 text-center text-sm text-stone-400">No saved user profiles yet. Profiles appear after a user saves their account.</div>
+            ) : (
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-stone-50 text-stone-500 font-bold uppercase tracking-wider">
+                    <tr><th className="p-3">User</th><th className="p-3">Contact</th><th className="p-3">Addresses</th><th className="p-3">Status</th><th className="p-3 text-right">Access</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100">
+                    {users.map((user) => (
+                      <tr key={user.id} className="hover:bg-stone-50/70">
+                        <td className="p-3"><div className="font-bold text-stone-900">{user.name}</div><div className="text-[10px] text-stone-400 font-mono">{user.id}</div></td>
+                        <td className="p-3"><div className="text-stone-700">{user.phone}</div><div className="text-[10px] text-stone-400">{user.email || "No email"}</div></td>
+                        <td className="p-3 text-stone-600">{user.savedAddresses?.length || 0} saved</td>
+                        <td className="p-3"><span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${user.isBlocked ? "bg-rose-100 text-rose-800" : "bg-emerald-100 text-emerald-800"}`}>{user.isBlocked ? "Blocked" : "Active"}</span></td>
+                        <td className="p-3 text-right whitespace-nowrap"><button type="button" onClick={() => onSetUserBlocked(user.id, !user.isBlocked)} className={`px-2.5 py-1.5 rounded-lg font-black text-[10px] cursor-pointer ${user.isBlocked ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>{user.isBlocked ? "Unblock" : "Block"}</button><button type="button" onClick={() => { if (confirm(`Delete user profile for ${user.name}?`)) onDeleteUser(user.id); }} className="ml-1.5 px-2.5 py-1.5 rounded-lg bg-stone-100 text-stone-700 hover:bg-rose-100 hover:text-rose-800 font-black text-[10px] cursor-pointer">Delete</button></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

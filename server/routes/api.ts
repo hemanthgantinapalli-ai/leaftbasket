@@ -17,6 +17,9 @@ import {
   getCoupons,
   getRiders,
   updateUserProfile,
+  getUsers,
+  setUserBlocked,
+  deleteUser,
   updateAdminProfile,
   updateRiderProfile,
   registerRider,
@@ -199,6 +202,22 @@ apiRouter.put("/users/:id", async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to update profile" });
   }
+});
+
+apiRouter.get("/users", async (_req, res) => {
+  res.json(await getUsers());
+});
+
+apiRouter.patch("/users/:id/block", async (req, res) => {
+  const updated = await setUserBlocked(req.params.id, req.body.blocked === true);
+  if (!updated) return res.status(404).json({ error: "User not found" });
+  res.json(updated);
+});
+
+apiRouter.delete("/users/:id", async (req, res) => {
+  const deleted = await deleteUser(req.params.id);
+  if (!deleted) return res.status(404).json({ error: "User not found" });
+  res.json({ success: true });
 });
 
 apiRouter.put("/admins/:id", async (req, res) => {

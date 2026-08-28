@@ -1,4 +1,5 @@
 import { Product, Category, Order, Coupon, Rider, DatabaseStatus, ProductReview } from "../types";
+import { UserProfile } from "../components/UserProfileModal";
 
 const BASE_URL = "/api";
 
@@ -26,6 +27,23 @@ export async function updateUserProfile(userId: string, profile: {
     throw new Error(errorData.error || "Failed to update profile");
   }
   return res.json();
+}
+
+export async function fetchUsers(): Promise<UserProfile[]> {
+  const res = await fetch(`${BASE_URL}/users`);
+  if (!res.ok) throw new Error("Failed to fetch users");
+  return res.json();
+}
+
+export async function setUserBlocked(userId: string, blocked: boolean): Promise<UserProfile> {
+  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}/block`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ blocked }) });
+  if (!res.ok) throw new Error("Failed to update user access");
+  return res.json();
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Failed to delete user");
 }
 
 export async function updateAdminProfile(adminId: string, profile: { name: string; email: string; hub: string; role: string }) {

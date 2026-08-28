@@ -7,6 +7,7 @@ export interface IUser {
   email?: string;
   savedAddresses?: string[];
   ordersCount?: number;
+  isBlocked?: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -17,6 +18,7 @@ const UserSchema = new Schema<IUser>(
     email: { type: String },
     savedAddresses: [{ type: String }],
     ordersCount: { type: Number, default: 0 },
+    isBlocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

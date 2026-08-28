@@ -20,6 +20,7 @@ let memProducts: any[] = [...INITIAL_PRODUCTS];
 let memCoupons: any[] = [...INITIAL_COUPONS];
 let memRiders: any[] = [...INITIAL_RIDERS];
 let memOrders: any[] = [...INITIAL_SAMPLE_ORDERS];
+let memUsers: any[] = [];
 
 export function isMongoActive(): boolean {
   return mongoose.connection.readyState === 1;
@@ -60,7 +61,50 @@ export async function updateUserProfile(userId: string, profile: any) {
         : order
     );
   }
-  return { id: userId, ...updates };
+  const existing = memUsers.findIndex((user) => user.id === userId);
+  const saved = { id: userId, ...updates, isBlocked: existing >= 0 ? memUsers[existing].isBlocked : false };
+  if (existing >= 0) memUsers[existing] = { ...memUsers[existing], ...saved };
+  else memUsers.push(saved);
+  return saved;
+}
+
+export async function getUsers() {
+  if (isMongoActive()) {
+    try {
+      return await UserModel.find().sort({ updatedAt: -1 }).lean().exec();
+    } catch (e) {
+      console.warn("MongoDB getUsers error:", e);
+    }
+  }
+  return memUsers;
+}
+
+export async function setUserBlocked(userId: string, blocked: boolean) {
+  if (isMongoActive()) {
+    try {
+      const updated = await (UserModel as any).findOneAndUpdate({ id: userId }, { $set: { isBlocked: blocked } }, { new: true }).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB setUserBlocked error:", e);
+    }
+  }
+  const idx = memUsers.findIndex((user) => user.id === userId);
+  if (idx === -1) return null;
+  memUsers[idx] = { ...memUsers[idx], isBlocked: blocked };
+  return memUsers[idx];
+}
+
+export async function deleteUser(userId: string) {
+  if (isMongoActive()) {
+    try {
+      await (UserModel as any).deleteOne({ id: userId }).exec();
+    } catch (e) {
+      console.warn("MongoDB deleteUser error:", e);
+    }
+  }
+  const exists = memUsers.some((user) => user.id === userId);
+  memUsers = memUsers.filter((user) => user.id !== userId);
+  return exists;
 }
 
 export async function updateAdminProfile(adminId: string, profile: any) {
