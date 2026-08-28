@@ -33,7 +33,7 @@ export interface IOrder {
   totalAmount: number;
   paymentMethod: "cod" | "upi" | "card" | "wallet";
   paymentStatus: "pending" | "paid" | "failed";
-  orderStatus: "placed" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
+  orderStatus: "placed" | "assigned" | "accepted" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
   statusTimeline: {
     status: string;
     timestamp: Date;

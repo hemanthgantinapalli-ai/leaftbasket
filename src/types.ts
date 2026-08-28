@@ -99,6 +99,7 @@ export interface RiderDetails {
   phone: string;
   vehicleNumber: string;
   hub?: string;
+  isApproved?: boolean;
   rating: number;
   photo?: string;
   lat: number;
@@ -160,6 +161,7 @@ export interface Rider {
   vehicleType: string;
   vehicleNumber: string;
   hub?: string;
+  isApproved?: boolean;
   rating: number;
   completedDeliveries: number;
   currentStatus: "idle" | "assigned" | "en_route" | "offline";

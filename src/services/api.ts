@@ -14,6 +14,7 @@ export async function updateUserProfile(userId: string, profile: {
   phone: string;
   email?: string;
   savedAddresses?: string[];
+  previousPhone?: string;
 }): Promise<typeof profile & { id: string }> {
   const res = await fetch(`${BASE_URL}/users/${encodeURIComponent(userId)}`, {
     method: "PUT",
@@ -36,6 +37,24 @@ export async function updateAdminProfile(adminId: string, profile: { name: strin
 export async function updateRiderProfile(riderId: string, profile: { name: string; phone: string; vehicleNumber: string; hub: string }) {
   const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}/profile`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
   if (!res.ok) throw new Error("Failed to update rider profile");
+  return res.json();
+}
+
+export async function registerRider(profile: { name: string; phone: string; vehicleNumber: string; hub: string; pin: string }): Promise<Rider> {
+  const res = await fetch(`${BASE_URL}/riders/register`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(profile) });
+  if (!res.ok) throw new Error("Failed to register rider");
+  return res.json();
+}
+
+export async function approveRider(riderId: string): Promise<Rider> {
+  const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}/approve`, { method: "PATCH" });
+  if (!res.ok) throw new Error("Failed to approve rider");
+  return res.json();
+}
+
+export async function updateRiderAvailability(riderId: string, online: boolean): Promise<Rider> {
+  const res = await fetch(`${BASE_URL}/riders/${encodeURIComponent(riderId)}/availability`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ online }) });
+  if (!res.ok) throw new Error("Failed to update rider availability");
   return res.json();
 }
 

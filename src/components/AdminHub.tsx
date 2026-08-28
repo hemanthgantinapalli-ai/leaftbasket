@@ -41,6 +41,9 @@ import {
 import { LeafBasketLogo } from "./LeafBasketLogo";
 import { motion, AnimatePresence } from "motion/react";
 
+const PRIVATE_ADMIN_EMAIL = "admin@123.com";
+const PRIVATE_ADMIN_PASSWORD = "admin9090";
+
 interface AdminHubProps {
   products: Product[];
   orders: Order[];
@@ -52,6 +55,7 @@ interface AdminHubProps {
   onUpdateOrderStatus: (orderId: string, status: string, note?: string) => Promise<void>;
   onAssignOrderRider: (orderId: string, riderId: string) => Promise<void>;
   onSaveAdminProfile: (profile: { name: string; email: string; hub: string; role: string }) => Promise<void>;
+  onApproveRider: (riderId: string) => Promise<void>;
 }
 
 export const AdminHub: React.FC<AdminHubProps> = ({
@@ -65,6 +69,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   onUpdateOrderStatus,
   onAssignOrderRider,
   onSaveAdminProfile,
+  onApproveRider,
 }) => {
   // Session Authentication state
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
@@ -77,8 +82,8 @@ export const AdminHub: React.FC<AdminHubProps> = ({
 
   // Admin Auth & Registration States
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const [adminName, setAdminName] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
+  const [adminName, setAdminName] = useState("Leafbasket Administrator");
+  const [adminEmail, setAdminEmail] = useState(PRIVATE_ADMIN_EMAIL);
   const [adminHubLocation, setAdminHubLocation] = useState("Dark Store #04 - Indiranagar, Bengaluru");
   const [adminRoleSelection, setAdminRoleSelection] = useState("Store Operations Director");
   const [adminPassword, setAdminPassword] = useState("");
@@ -147,90 +152,28 @@ export const AdminHub: React.FC<AdminHubProps> = ({
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
+    const isMatch = adminEmail.trim().toLowerCase() === PRIVATE_ADMIN_EMAIL && adminPassword === PRIVATE_ADMIN_PASSWORD;
 
-    const validPins = ["8899", "leafadmin", "admin123", "leafbasket", "0000"];
-    const isEmailValid = adminEmail.trim().length > 3;
-
-    if (!isEmailValid) {
-      setLoginError("Please provide a valid administrator email or staff ID.");
-      return;
-    }
-
-    let isMatch = validPins.includes(adminPassword.trim());
-
-    try {
-      const storedAdmins = JSON.parse(localStorage.getItem("leafbasket_registered_admins") || "[]");
-      const found = storedAdmins.find(
-        (a: any) =>
-          a.email.toLowerCase() === adminEmail.trim().toLowerCase() && a.pin === adminPassword.trim()
-      );
-      if (found) {
-        isMatch = true;
-        setActiveAdminRole(found.role || "Store Operations Director");
-      }
-    } catch (err) {
-      console.error(err);
-    }
-
-    if (isMatch || adminPassword.trim() === "8899") {
+    if (isMatch) {
+      setAdminName("Leafbasket Administrator");
+      setAdminEmail(PRIVATE_ADMIN_EMAIL);
+      setActiveAdminRole("Store Operations Director");
       setIsAdminLoggedIn(true);
       try {
         sessionStorage.setItem("leafbasket_admin_authenticated", "true");
-        sessionStorage.setItem("leafbasket_admin_email", adminEmail.trim());
-        sessionStorage.setItem("leafbasket_admin_role", activeAdminRole);
+        sessionStorage.setItem("leafbasket_admin_email", PRIVATE_ADMIN_EMAIL);
+        sessionStorage.setItem("leafbasket_admin_role", "Store Operations Director");
       } catch (err) {
         console.error(err);
       }
     } else {
-      setLoginError("Invalid Admin Passcode. Use PIN: 8899 (or register an administrator profile below)");
+      setLoginError("Private admin credentials did not match. Only the platform owner can access this console.");
     }
   };
 
   const handleAdminRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError(null);
-
-    if (!adminName.trim() || !adminEmail.trim()) {
-      setLoginError("Please provide your full name and official email.");
-      return;
-    }
-
-    if (adminPassword.trim().length < 4) {
-      setLoginError("Security Passcode must be at least 4 characters.");
-      return;
-    }
-
-    const newAdmin = {
-      id: `adm-${Date.now()}`,
-      name: adminName.trim(),
-      email: adminEmail.trim(),
-      hub: adminHubLocation,
-      role: adminRoleSelection,
-      pin: adminPassword.trim(),
-      registeredAt: new Date().toISOString(),
-    };
-
-    try {
-      const existing = JSON.parse(localStorage.getItem("leafbasket_registered_admins") || "[]");
-      existing.push(newAdmin);
-      localStorage.setItem("leafbasket_registered_admins", JSON.stringify(existing));
-    } catch (err) {
-      console.error(err);
-    }
-
-    setRegisterSuccess("Administrator Account Created Successfully! Logging in to Executive Hub...");
-    setActiveAdminRole(adminRoleSelection);
-
-    setTimeout(() => {
-      setIsAdminLoggedIn(true);
-      try {
-        sessionStorage.setItem("leafbasket_admin_authenticated", "true");
-        sessionStorage.setItem("leafbasket_admin_email", adminEmail.trim());
-        sessionStorage.setItem("leafbasket_admin_role", adminRoleSelection);
-      } catch (err) {
-        console.error(err);
-      }
-    }, 800);
+    setLoginError("Admin registration is restricted. Use the private owner credentials on the Sign In tab.");
   };
 
   const handleAdminLogout = () => {
@@ -379,7 +322,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     : "text-stone-400 hover:text-white"
                 }`}
               >
-                Register Staff
+                Owner Access Only
               </button>
             </div>
           </div>
@@ -430,7 +373,7 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     Master Security Passcode / PIN
                   </label>
                   <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                    Master PIN: 8899
+                    Private Owner Account
                   </span>
                 </div>
                 <div className="relative">
@@ -910,7 +853,24 @@ export const AdminHub: React.FC<AdminHubProps> = ({
                     <div className="font-bold text-stone-800">Riders on Standby</div>
                     <div className="text-[11px] text-stone-500">Ather EV Fleet ready at Hub</div>
                   </div>
-                  <span className="text-xs font-black text-stone-900">4 Active</span>
+                  <span className="text-xs font-black text-stone-900">{riders.filter((rider) => rider.isApproved !== false && rider.currentStatus !== "offline").length} Online</span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white border border-stone-200 space-y-2">
+                  <div className="font-bold text-stone-800">Driver Access & Availability</div>
+                  {riders.map((rider) => (
+                    <div key={rider.riderId} className="flex items-center justify-between gap-2 border-t border-stone-100 pt-2">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-stone-800 truncate">{rider.name}</div>
+                        <div className="text-[10px] text-stone-500">{rider.phone} · {rider.currentStatus === "offline" ? "Offline" : "Online"}</div>
+                      </div>
+                      {rider.isApproved === false ? (
+                        <button type="button" onClick={() => onApproveRider(rider.riderId)} className="shrink-0 px-2.5 py-1.5 rounded-lg bg-amber-500 text-stone-950 font-black text-[10px] cursor-pointer">Approve</button>
+                      ) : (
+                        <span className="shrink-0 text-[10px] font-bold text-emerald-700">Approved</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 flex items-center justify-between">

@@ -19,6 +19,9 @@ import {
   updateUserProfile,
   updateAdminProfile,
   updateRiderProfile,
+  registerRider,
+  approveRider,
+  updateRiderAvailability,
   isMongoActive,
   seedMongoIfEmpty,
 } from "../store.js";
@@ -332,6 +335,24 @@ apiRouter.get("/riders", async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err.message || "Failed to fetch riders" });
   }
+});
+
+apiRouter.post("/riders/register", async (req, res) => {
+  const created = await registerRider(req.body);
+  if (!created) return res.status(400).json({ error: "Name, phone, vehicle, and a 4-digit PIN are required" });
+  res.status(201).json(created);
+});
+
+apiRouter.patch("/riders/:id/approve", async (req, res) => {
+  const updated = await approveRider(req.params.id);
+  if (!updated) return res.status(404).json({ error: "Rider not found" });
+  res.json(updated);
+});
+
+apiRouter.patch("/riders/:id/availability", async (req, res) => {
+  const updated = await updateRiderAvailability(req.params.id, req.body.online === true);
+  if (!updated) return res.status(404).json({ error: "Approved rider not found" });
+  res.json(updated);
 });
 
 // AI Smart Grocery & Recipe Assistant

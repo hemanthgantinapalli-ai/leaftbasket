@@ -41,12 +41,25 @@ export async function updateUserProfile(userId: string, profile: any) {
         { $set: updates, $setOnInsert: { id: userId } },
         { new: true, upsert: true, lean: true }
       ).exec();
+      if (profile.previousPhone) {
+        await (OrderModel as any).updateMany(
+          { customerPhone: profile.previousPhone },
+          { $set: { customerName: updates.name, customerPhone: updates.phone, updatedAt: new Date() } }
+        ).exec();
+      }
       return updated;
     } catch (e) {
       console.warn("MongoDB updateUserProfile error:", e);
     }
   }
 
+  if (profile.previousPhone) {
+    memOrders = memOrders.map((order) =>
+      order.customerPhone === profile.previousPhone
+        ? { ...order, customerName: updates.name, customerPhone: updates.phone, updatedAt: new Date() }
+        : order
+    );
+  }
   return { id: userId, ...updates };
 }
 
@@ -90,6 +103,66 @@ export async function updateRiderProfile(riderId: string, profile: any) {
     return memRiders[idx];
   }
   return { riderId, ...updates };
+}
+
+export async function registerRider(profile: any) {
+  const rider = {
+    riderId: `rider-${Date.now()}`,
+    name: String(profile.name || "").trim(),
+    phone: String(profile.phone || "").trim(),
+    pin: String(profile.pin || "").trim(),
+    vehicleType: "Electric Scooter",
+    vehicleNumber: String(profile.vehicleNumber || "").trim(),
+    hub: String(profile.hub || "Dark Store #04 - Indiranagar, Bengaluru").trim(),
+    rating: 5,
+    completedDeliveries: 0,
+    currentStatus: "offline",
+    isApproved: false,
+    currentLocation: { lat: 12.9716, lng: 77.6412, heading: 0, speedKmH: 0, lastUpdated: new Date() },
+    batteryPercentage: 100,
+  };
+  if (!rider.name || !rider.phone || !rider.vehicleNumber || rider.pin.length < 4) return null;
+  if (isMongoActive()) {
+    try {
+      const created = await RiderModel.create(rider);
+      return created.toObject();
+    } catch (e) {
+      console.warn("MongoDB registerRider error:", e);
+    }
+  }
+  memRiders.push(rider);
+  return rider;
+}
+
+export async function approveRider(riderId: string) {
+  if (isMongoActive()) {
+    try {
+      const updated = await (RiderModel as any).findOneAndUpdate({ riderId }, { $set: { isApproved: true, currentStatus: "idle" } }, { new: true }).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB approveRider error:", e);
+    }
+  }
+  const idx = memRiders.findIndex((rider) => rider.riderId === riderId);
+  if (idx === -1) return null;
+  memRiders[idx] = { ...memRiders[idx], isApproved: true, currentStatus: "idle" };
+  return memRiders[idx];
+}
+
+export async function updateRiderAvailability(riderId: string, online: boolean) {
+  const currentStatus = online ? "idle" : "offline";
+  if (isMongoActive()) {
+    try {
+      const updated = await (RiderModel as any).findOneAndUpdate({ riderId, isApproved: true }, { $set: { currentStatus } }, { new: true }).lean().exec();
+      if (updated) return updated;
+    } catch (e) {
+      console.warn("MongoDB updateRiderAvailability error:", e);
+    }
+  }
+  const idx = memRiders.findIndex((rider) => rider.riderId === riderId && rider.isApproved !== false);
+  if (idx === -1) return null;
+  memRiders[idx].currentStatus = currentStatus;
+  return memRiders[idx];
 }
 
 export async function seedMongoIfEmpty() {
@@ -393,8 +466,15 @@ export async function createOrder(orderPayload: any) {
 }
 
 export async function assignOrderRider(orderId: string, riderId: string) {
-  const rider: any = memRiders.find((item) => item.riderId === riderId);
-  if (!rider) return null;
+  let rider: any = memRiders.find((item) => item.riderId === riderId);
+  if (isMongoActive()) {
+    try {
+      rider = await RiderModel.findOne({ riderId }).lean().exec();
+    } catch (e) {
+      console.warn("MongoDB find rider for assignment error:", e);
+    }
+  }
+  if (!rider || rider.isApproved === false || rider.currentStatus === "offline") return null;
 
   const riderDetails = {
     riderId: rider.riderId,

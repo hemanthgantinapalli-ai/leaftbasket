@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { CartItem, Coupon, DeliveryAddress } from "../types";
+import { UserProfile } from "./UserProfileModal";
 import { DeliveryLocation } from "./LocationPickerModal";
 import { PhonePeQrModal } from "./PhonePeQrModal";
 import {
@@ -41,6 +42,7 @@ interface CartDrawerProps {
   selectedLocation?: DeliveryLocation;
   onOpenLocationPicker?: () => void;
   onOpenPastOrders?: () => void;
+  currentUser?: UserProfile | null;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
@@ -57,6 +59,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   selectedLocation,
   onOpenLocationPicker,
   onOpenPastOrders,
+  currentUser,
 }) => {
   const [couponInput, setCouponInput] = useState("");
   const [couponError, setCouponError] = useState<string | null>(null);
@@ -146,8 +149,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     setIsSubmitting(true);
     try {
       const orderPayload = {
-        customerName: "Priya Sharma",
-        customerPhone: "+91 98450 12345",
+        customerName: currentUser?.name || "Valued Customer",
+        customerPhone: currentUser?.phone || "+91 98450 12345",
         deliveryAddress,
         items: cartItems.map((ci) => ({
           productId: ci.product.id,
@@ -332,7 +335,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             >
                               <Minus className="w-3.5 h-3.5" />
                             </button>
-                            <span className="px-2 text-xs font-extrabold text-stone-900 min-w-[20px] text-center">
+                            <span className="px-2 text-xs font-extrabold text-stone-900 min-w-5 text-center">
                               {quantity}
                             </span>
                             <button
@@ -343,7 +346,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             </button>
                           </div>
 
-                          <div className="text-right min-w-[50px]">
+                          <div className="text-right min-w-12.5">
                             <span className="text-xs font-extrabold text-stone-900">
                               ₹{product.price * quantity}
                             </span>
@@ -610,7 +613,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                     upiSubOption === "phonepe"
                                       ? "bg-[#5f259f]"
                                       : upiSubOption === "gpay"
-                                      ? "bg-gradient-to-tr from-blue-600 to-green-500"
+                                      ? "bg-linear-to-tr from-blue-600 to-green-500"
                                       : upiSubOption === "paytm"
                                       ? "bg-[#002e6e]"
                                       : "bg-emerald-700"
@@ -706,7 +709,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setIsPhonePeQrOpen(true)}
-                                className="py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl font-bold text-[11px] shadow-md transition flex items-center justify-center gap-1 cursor-pointer"
+                                className="py-2 bg-linear-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl font-bold text-[11px] shadow-md transition flex items-center justify-center gap-1 cursor-pointer"
                               >
                                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                                 <span>Expand QR</span>
@@ -906,7 +909,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   onClick={handleCheckout}
                   disabled={isSubmitting}
                   id="place-order-checkout-button"
-                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs sm:text-sm py-3 sm:py-3.5 px-3.5 sm:px-4 rounded-2xl shadow-lg shadow-emerald-700/25 flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  className="w-full bg-linear-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs sm:text-sm py-3 sm:py-3.5 px-3.5 sm:px-4 rounded-2xl shadow-lg shadow-emerald-700/25 flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
                 >
                   <div className="text-left">
                     <div className="text-[9px] sm:text-[10px] text-emerald-100 font-medium uppercase tracking-wider">

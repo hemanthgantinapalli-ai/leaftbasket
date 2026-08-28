@@ -4,9 +4,11 @@ export interface IRider {
   riderId: string;
   name: string;
   phone: string;
+  pin?: string;
   vehicleType: string;
   vehicleNumber: string;
   hub?: string;
+  isApproved?: boolean;
   rating: number;
   completedDeliveries: number;
   currentStatus: string;
@@ -26,9 +28,11 @@ const RiderSchema = new Schema<IRider>(
     riderId: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     phone: { type: String, required: true },
+    pin: { type: String },
     vehicleType: { type: String, default: "Electric Scooter" },
     vehicleNumber: { type: String, default: "KA 01 EK 4920" },
     hub: { type: String, default: "Dark Store #04 - Indiranagar, Bengaluru" },
+    isApproved: { type: Boolean, default: true },
     rating: { type: Number, default: 4.9 },
     completedDeliveries: { type: Number, default: 840 },
     currentStatus: { type: String, default: "idle" },

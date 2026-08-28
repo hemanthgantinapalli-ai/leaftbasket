@@ -24,6 +24,9 @@ import {
   updateUserProfile,
   updateAdminProfile,
   updateRiderProfile,
+  registerRider,
+  approveRider,
+  updateRiderAvailability,
   updateOrderLocation,
   createProduct,
   updateProduct,
@@ -331,8 +334,16 @@ export default function App() {
       phone: user.phone,
       email: user.email,
       savedAddresses: user.savedAddresses,
+      previousPhone: currentUser?.phone,
     });
     handleUserLogin({ ...user, ...saved });
+    if (currentUser?.phone) {
+      setOrders((prev) => prev.map((order) =>
+        order.customerPhone === currentUser.phone
+          ? { ...order, customerName: user.name, customerPhone: user.phone }
+          : order
+      ));
+    }
   };
 
   const handleSaveAdminProfile = async (profile: { name: string; email: string; hub: string; role: string }) => {
@@ -351,6 +362,22 @@ export default function App() {
       hub: rider.hub || "Dark Store #04 - Indiranagar, Bengaluru",
     });
     setRiders((prev) => prev.map((item) => (item.riderId === saved.riderId ? saved : item)));
+  };
+
+  const handleRegisterRider = async (profile: { name: string; phone: string; vehicleNumber: string; hub: string; pin: string }) => {
+    const created = await registerRider(profile);
+    setRiders((prev) => [...prev.filter((rider) => rider.riderId !== created.riderId), created]);
+    return created;
+  };
+
+  const handleApproveRider = async (riderId: string) => {
+    const updated = await approveRider(riderId);
+    setRiders((prev) => prev.map((rider) => rider.riderId === riderId ? updated : rider));
+  };
+
+  const handleSetRiderAvailability = async (riderId: string, online: boolean) => {
+    const updated = await updateRiderAvailability(riderId, online);
+    setRiders((prev) => prev.map((rider) => rider.riderId === riderId ? updated : rider));
   };
 
   // Save cart changes
@@ -416,6 +443,8 @@ export default function App() {
           previousOrderStatusesRef.current[fresh.orderId] = fresh.orderStatus;
         });
         setOrders(freshOrders);
+        const freshRiders = await fetchRiders();
+        setRiders(freshRiders);
       } catch (e) {
         // silent polling catch
       }
@@ -879,6 +908,8 @@ export default function App() {
             onUpdateStatus={handleUpdateOrderStatus}
             onUpdateLocation={handleUpdateOrderLocation}
             onSaveRiderProfile={handleSaveRiderProfile}
+            onRegisterRider={handleRegisterRider}
+            onSetRiderAvailability={handleSetRiderAvailability}
           />
         )}
 
@@ -895,6 +926,7 @@ export default function App() {
             onUpdateOrderStatus={handleUpdateOrderStatus}
             onAssignOrderRider={handleAssignOrderRider}
             onSaveAdminProfile={handleSaveAdminProfile}
+            onApproveRider={handleApproveRider}
           />
         )}
       </main>
@@ -936,6 +968,7 @@ export default function App() {
         onRemoveCoupon={() => setAppliedCoupon(null)}
         coupons={coupons}
         onPlaceOrder={handlePlaceOrder}
+        currentUser={currentUser}
         selectedLocation={selectedLocation}
         onOpenLocationPicker={() => setIsLocationModalOpen(true)}
         onOpenPastOrders={() => {

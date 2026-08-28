@@ -36,6 +36,8 @@ interface RiderPortalProps {
   onUpdateStatus: (orderId: string, status: string, note?: string) => Promise<void>;
   onUpdateLocation: (orderId: string, lat: number, lng: number, etaMinutes?: number) => Promise<void>;
   onSaveRiderProfile: (rider: Rider) => Promise<void>;
+  onRegisterRider: (profile: { name: string; phone: string; vehicleNumber: string; hub: string; pin: string }) => Promise<Rider>;
+  onSetRiderAvailability: (riderId: string, online: boolean) => Promise<void>;
 }
 
 export const RiderPortal: React.FC<RiderPortalProps> = ({
@@ -44,6 +46,8 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
   onUpdateStatus,
   onUpdateLocation,
   onSaveRiderProfile,
+  onRegisterRider,
+  onSetRiderAvailability,
 }) => {
   // Rider Authentication State
   const [isRiderLoggedIn, setIsRiderLoggedIn] = useState<boolean>(() => {
@@ -105,6 +109,25 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
     setRiderProfileForm({ name: currentRider.name, phone: currentRider.phone, vehicleNumber: currentRider.vehicleNumber, hub: currentRider.hub || "Dark Store #04 - Indiranagar, Bengaluru" });
   }, [currentRider]);
 
+  useEffect(() => {
+    if (riders.length === 0) return;
+    let savedPhone = "";
+    try {
+      savedPhone = sessionStorage.getItem("leafbasket_rider_phone") || "";
+    } catch {}
+    const matchedRider = riders.find(
+      (rider) => rider.phone.replace(/\s+/g, "") === savedPhone.replace(/\s+/g, "")
+    );
+    if (matchedRider) setCurrentRider(matchedRider);
+    try {
+      const storedRiders = JSON.parse(localStorage.getItem("leafbasket_registered_riders") || "[]");
+      localStorage.setItem("leafbasket_registered_riders", JSON.stringify(storedRiders.map((stored: any) => {
+        const serverRider = riders.find((rider) => rider.riderId === stored.id || rider.phone.replace(/\s+/g, "") === stored.phone.replace(/\s+/g, ""));
+        return serverRider ? { ...stored, approved: serverRider.isApproved !== false } : stored;
+      })));
+    } catch {}
+  }, [riders]);
+
   const handleSaveRiderProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingRiderProfile(true);
@@ -125,13 +148,12 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
     e.preventDefault();
     setRiderAuthError(null);
 
-    const validPins = ["1234", "8899", "4829", "0000"];
     if (!riderPhoneInput.trim()) {
       setRiderAuthError("Please enter your registered delivery partner mobile number.");
       return;
     }
 
-    let isMatch = validPins.includes(riderPasscode.trim()) || riderPasscode.trim() === "1234";
+    let isMatch = false;
 
     try {
       const storedRiders = JSON.parse(localStorage.getItem("leafbasket_registered_riders") || "[]");
@@ -141,6 +163,10 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
           r.pin === riderPasscode.trim()
       );
       if (found) {
+        if (found.approved === false) {
+          setRiderAuthError("Your registration is waiting for admin approval.");
+          return;
+        }
         isMatch = true;
         setCurrentRider({
           riderId: found.id,
@@ -159,7 +185,18 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
             lastUpdated: new Date().toISOString(),
           },
           batteryPercentage: 94,
+          isApproved: true,
         });
+      }
+
+      if (!isMatch) {
+        const seededRider = riders.find(
+          (rider) => rider.phone.replace(/\s+/g, "") === riderPhoneInput.replace(/\s+/g, "")
+        );
+        if (seededRider && riderPasscode.trim() === "1234") {
+          isMatch = true;
+          setCurrentRider(seededRider);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -174,11 +211,11 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
         console.error(err);
       }
     } else {
-      setRiderAuthError("Invalid partner passcode. Use demo PIN: 1234 or register below.");
+      setRiderAuthError("Invalid rider credentials. Register your own partner account or use your registered phone and PIN.");
     }
   };
 
-  const handleRiderRegister = (e: React.FormEvent) => {
+  const handleRiderRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setRiderAuthError(null);
 
@@ -203,43 +240,23 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
     };
 
     try {
+      const created = await onRegisterRider({ name: riderNameInput.trim(), phone: riderPhoneInput.trim(), vehicleNumber: riderVehicleInput.trim(), hub: riderHubInput.trim(), pin: riderPasscode.trim() });
       const existing = JSON.parse(localStorage.getItem("leafbasket_registered_riders") || "[]");
-      existing.push(newRiderRecord);
+      existing.push({ ...newRiderRecord, id: created.riderId, approved: false });
       localStorage.setItem("leafbasket_registered_riders", JSON.stringify(existing));
+      setCurrentRider(created);
     } catch (err) {
       console.error(err);
     }
 
-    setCurrentRider({
-      riderId: newRiderRecord.id,
-      name: newRiderRecord.name,
-      phone: newRiderRecord.phone,
-      vehicleType: newRiderRecord.vehicle?.includes("Bike") ? "Bike" : "Electric Scooter",
-      vehicleNumber: newRiderRecord.vehicle,
-      rating: 5.0,
-      completedDeliveries: 0,
-      currentStatus: "idle",
-      currentLocation: {
-        lat: 12.9729,
-        lng: 77.6374,
-        heading: 0,
-        speedKmH: 0,
-        lastUpdated: new Date().toISOString(),
-      },
-      batteryPercentage: 96,
-    });
+    setRiderRegisterSuccess("Registration submitted. Admin approval is required before you can accept deliveries.");
+    setIsRiderLoggedIn(false);
+  };
 
-    setRiderRegisterSuccess("Delivery Partner Registered Successfully! Onboarding complete.");
-
-    setTimeout(() => {
-      setIsRiderLoggedIn(true);
-      try {
-        sessionStorage.setItem("leafbasket_rider_authenticated", "true");
-        sessionStorage.setItem("leafbasket_rider_phone", riderPhoneInput.trim());
-      } catch (err) {
-        console.error(err);
-      }
-    }, 800);
+  const handleAvailabilityToggle = async () => {
+    if (!currentRider.isApproved) return;
+    await onSetRiderAvailability(currentRider.riderId, currentRider.currentStatus === "offline");
+    setCurrentRider((prev) => ({ ...prev, currentStatus: prev.currentStatus === "offline" ? "idle" : "offline" }));
   };
 
   const handleRiderLogout = () => {
@@ -359,7 +376,7 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
                     Rider Partner PIN
                   </label>
                   <span className="text-[10px] text-amber-400 font-mono bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">
-                    Demo PIN: 1234
+                    Registered rider PIN
                   </span>
                 </div>
                 <div className="relative">
@@ -570,6 +587,15 @@ export const RiderPortal: React.FC<RiderPortalProps> = ({
             </div>
           </div>
 
+          <button
+            type="button"
+            onClick={handleAvailabilityToggle}
+            disabled={currentRider.isApproved === false}
+            className="px-3.5 py-2.5 bg-stone-800 hover:bg-emerald-950/80 text-stone-300 hover:text-emerald-200 border border-stone-700 hover:border-emerald-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+          >
+            <span className={`w-2 h-2 rounded-full ${currentRider.currentStatus === "offline" ? "bg-stone-500" : "bg-emerald-400 animate-pulse"}`} />
+            <span>{currentRider.currentStatus === "offline" ? "Go Online" : "Go Offline"}</span>
+          </button>
           <button
             type="button"
             onClick={handleRiderLogout}
